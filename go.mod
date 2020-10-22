@@ -22,5 +22,5 @@ require (
 	github.com/zclconf/go-cty v1.7.0 // indirect
 	golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897 // indirect
 	golang.org/x/sys v0.0.0-20201022201747-fb209a7c41cd // indirect
-	golang.org/x/tools v0.0.0-20201022211933-13b3b307426d // indirect
+	golang.org/x/tools v0.0.0-20201022215848-ffe8bce740af // indirect
 )
