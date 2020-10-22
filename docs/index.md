@@ -49,19 +49,20 @@ means:
 
 !> **Warning:** Hard-coding credentials into any Terraform configuration is not
 recommended, and risks secret leakage should this file ever be committed to a
-public version control system. 
+public version control system.
 
 A static can be provided by adding `token` in-line in the Slack provider block:
 
 Usage:
+
 ```hcl
 provider slack {
   token = var.slack_token
 }
 ```
- 
+
 ### Environment Variables
- 
+
 You can provide your token via the `SLACK_TOKEN` environment variable:
 
 ```hcl
@@ -71,8 +72,8 @@ provider slack {}
 Usage:
 
 ```sh
-$ export SLACK_TOKEN="my-token"
-$ terraform plan
+export SLACK_TOKEN="my-token"
+terraform plan
 ```
 
 ## Argument Reference
@@ -81,5 +82,5 @@ In addition to [generic `provider` arguments](https://www.terraform.io/docs/conf
 (e.g. `alias` and `version`), the following arguments are supported in the AWS
  `provider` block:
 
-* `token` - (Mandatory) The Slack token. It must be provided,
+- `token` - (Mandatory) The Slack token. It must be provided,
 but it can also be sourced from the `SLACK_TOKEN` environment variable.
