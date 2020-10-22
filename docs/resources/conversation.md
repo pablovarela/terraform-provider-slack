@@ -31,4 +31,4 @@ The following arguments are supported:
 
 In addition to all arguments above, the following attributes are exported:
 
-* `id` - The inventory item ID (e.g. 01e7ecb8-7955-4ec7-8858-d5a6fab772d3).
+* `id` - The channel ID (e.g. C015QDUB7ME).

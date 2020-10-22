@@ -28,5 +28,5 @@ In addition to all arguments above, the following attributes are exported:
 
 * `name` - Name of the public or private channel.
 * `topic` - Topic for the channel.
-* `members` -  Members to add to the channel.
+* `members` -  Members currently in the channel.
 * `is_private` - Whether the channel is private or not.
