@@ -5,7 +5,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/slack-go/slack"
-	"log"
 )
 
 func resourceSlackConversation() *schema.Resource {
@@ -167,7 +166,6 @@ func resourceSlackConversationDelete(ctx context.Context, d *schema.ResourceData
 	client := m.(*slack.Client)
 
 	id := d.Id()
-	log.Printf("[DEBUG] Deleting(archive) Conversation: %s (%s)", id, d.Get("name"))
 	if err := client.ArchiveConversationContext(ctx, id); err != nil {
 		return diag.FromErr(err)
 	}

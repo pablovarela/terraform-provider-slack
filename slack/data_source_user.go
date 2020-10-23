@@ -33,7 +33,6 @@ func dataSourceUserRead(ctx context.Context, d *schema.ResourceData, m interface
 
 	var matchingUsers []slack.User
 	for _, user := range users {
-		fmt.Println(user.Name)
 		if user.Name == d.Get("name") {
 			matchingUsers = append(matchingUsers, user)
 		}
@@ -50,7 +49,9 @@ func dataSourceUserRead(ctx context.Context, d *schema.ResourceData, m interface
 	user := matchingUsers[0]
 
 	d.SetId(user.ID)
-	_ = d.Set("name", user.Name)
+	if err := d.Set("name", user.Name); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting name: %s", err))
+	}
 
 	if err := d.Set("name", user.Name); err != nil {
 		return diag.Errorf("error setting name: %s", err)
