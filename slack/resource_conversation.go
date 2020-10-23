@@ -123,7 +123,6 @@ func resourceSlackConversationCreate(ctx context.Context, d *schema.ResourceData
 }
 
 func resourceSlackConversationRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	var diags diag.Diagnostics
 	client := m.(*slack.Client)
 
 	id := d.Id()
@@ -132,18 +131,7 @@ func resourceSlackConversationRead(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	users, _, err := client.GetUsersInConversationContext(ctx, &slack.GetUsersInConversationParameters{
-		ChannelID: channel.ID,
-	})
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	err = updateChannelData(d, channel, users)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	return diags
+	return updateChannelData(d, channel)
 }
 
 func resourceSlackConversationUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {

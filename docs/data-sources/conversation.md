@@ -27,7 +27,6 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
 * `name` - name of the public or private channel.
-* `permanent_members` - user IDs that are added to the channel if not already there.
 * `members` - user IDs of users in the channel.
 * `topic` - topic for the channel.
 * `purpose` - purpose of the channel.
