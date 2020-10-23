@@ -34,7 +34,7 @@ func TestAccSlackConversationTest(t *testing.T) {
 		CheckDestroy:      testAccCheckConversationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccConversationConfig(createChannel),
+				Config: testAccSlackConversationConfig(createChannel),
 				Check: resource.ComposeTestCheckFunc(
 					//testAccCheckInventoryItemExists(t, resourceName, &item),
 					//testAccCheckInventoryItemMatches(t, createItem, &item),
@@ -50,7 +50,7 @@ func TestAccSlackConversationTest(t *testing.T) {
 				ImportStateVerify: true,
 			},
 			{
-				Config: testAccConversationConfig(updateChannel),
+				Config: testAccSlackConversationConfig(updateChannel),
 				Check: resource.ComposeTestCheckFunc(
 					//testAccCheckInventoryItemExists(t, resourceName, &item),
 					//testAccCheckInventoryItemMatches(t, expectedItem, &item),
@@ -96,7 +96,7 @@ func testAccCheckConversationDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccConversationConfig(c slack.Channel) string {
+func testAccSlackConversationConfig(c slack.Channel) string {
 	var members []string
 	for _, member := range c.Members {
 		members = append(members, fmt.Sprintf(`"%s"`, member))
