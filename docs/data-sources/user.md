@@ -3,9 +3,9 @@ subcategory: "Slack"
 page_title: "Slack: slack_user"
 ---
 
-# change_inventory_item Data Source
+# slack_user Data Source
 
-Use this data source to get information about an inventory item for use in other
+Use this data source to get information about a user for use in other
 resources.
 
 ## Example Usage

@@ -160,10 +160,9 @@ func resourceSlackConversationUpdate(ctx context.Context, d *schema.ResourceData
 	if d.HasChange("is_archived") {
 		isArchived := d.Get("is_archived")
 		if isArchived.(bool) {
-			if err := client.ArchiveConversationContext(ctx, id); err != nil {
-				if err.Error() != "already_archived" {
-					return diag.FromErr(err)
-				}
+			err := archiveConversationWithContext(ctx, client, id)
+			if err != nil {
+				return diag.FromErr(err)
 			}
 		} else {
 			if err := client.UnArchiveConversationContext(ctx, id); err != nil {
@@ -175,6 +174,15 @@ func resourceSlackConversationUpdate(ctx context.Context, d *schema.ResourceData
 	}
 
 	return resourceSlackConversationRead(ctx, d, m)
+}
+
+func archiveConversationWithContext(ctx context.Context, client *slack.Client, id string) error {
+	if err := client.ArchiveConversationContext(ctx, id); err != nil {
+		if err.Error() != "already_archived" {
+			return err
+		}
+	}
+	return nil
 }
 
 func resourceSlackConversationDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
