@@ -96,11 +96,11 @@ func testAccSlackConversation(channelName string, members []string) slack.Channe
 func testAccCheckConversationDestroy(s *terraform.State) error {
 	c := testAccProvider.Meta().(*slack.Client)
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "change_inventory_item" {
+		if rs.Type != "slack_conversation" {
 			continue
 		}
 
-		err := c.ArchiveChannelContext(context.Background(), rs.Primary.ID)
+		err := archiveConversationWithContext(context.Background(), c, rs.Primary.ID)
 		if err != nil {
 			return fmt.Errorf("error archiving channel %s: %s", rs.Primary.ID, err)
 		}
