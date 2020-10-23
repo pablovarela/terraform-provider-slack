@@ -45,7 +45,7 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 	return slackClient, diags
 }
 
-func updateChannelData(d *schema.ResourceData, channel *slack.Channel) error {
+func updateChannelData(d *schema.ResourceData, channel *slack.Channel, users []string) error {
 	if channel.ID == "" {
 		return errors.New("error setting id: returned channel does not have an ID")
 	}
@@ -89,6 +89,14 @@ func updateChannelData(d *schema.ResourceData, channel *slack.Channel) error {
 
 	if err := d.Set("is_private", channel.IsPrivate); err != nil {
 		return fmt.Errorf("error setting is_private: %s", err)
+	}
+
+	if err := d.Set("is_general", channel.IsGeneral); err != nil {
+		return fmt.Errorf("error setting is_general: %s", err)
+	}
+
+	if err := d.Set("members", users); err != nil {
+		return fmt.Errorf("error setting members: %s", err)
 	}
 
 	return nil

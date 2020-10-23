@@ -18,11 +18,12 @@ func TestAccSlackConversationTest(t *testing.T) {
 	resourceName := "slack_conversation.test"
 
 	name := acctest.RandomWithPrefix("test-acc-slack-conversation-test")
-	createChannel := testAccSlackConversation(name)
+	var members = []string{nonAuthenticatedTestUserID}
+	createChannel := testAccSlackConversation(name, members)
 
 	updateName := acctest.RandomWithPrefix("test-acc-slack-conversation-test-update")
-	updateChannel := createChannel
-	updateChannel.Name = updateName
+	updateChannel := testAccSlackConversation(updateName, members)
+	updateChannel.ID = createChannel.ID
 
 	var providers []*schema.Provider
 	resource.Test(t, resource.TestCase{
@@ -36,40 +37,40 @@ func TestAccSlackConversationTest(t *testing.T) {
 			{
 				Config: testAccSlackConversationConfig(createChannel),
 				Check: resource.ComposeTestCheckFunc(
-					//testAccCheckInventoryItemExists(t, resourceName, &item),
-					//testAccCheckInventoryItemMatches(t, createItem, &item),
 					resource.TestCheckResourceAttr(resourceName, "name", createChannel.Name),
 					resource.TestCheckResourceAttr(resourceName, "topic", createChannel.Topic.Value),
-					//resource.TestCheckResourceAttr(resourceName, "is_private", createChannel.IsPrivate),
-
+					resource.TestCheckResourceAttr(resourceName, "purpose", createChannel.Purpose.Value),
+					resource.TestCheckResourceAttr(resourceName, "is_private", fmt.Sprintf("%t", createChannel.IsPrivate)),
+				//	resource.TestCheckResourceAttr(resourceName, "members", fmt.Sprintf("%t", createChannel.IsPrivate)),
 				),
 			},
-			{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
+			//{
+			//	ResourceName:      resourceName,
+			//	ImportState:       true,
+			//	ImportStateVerify: true,
+			//},
 			{
 				Config: testAccSlackConversationConfig(updateChannel),
 				Check: resource.ComposeTestCheckFunc(
-					//testAccCheckInventoryItemExists(t, resourceName, &item),
-					//testAccCheckInventoryItemMatches(t, expectedItem, &item),
 					resource.TestCheckResourceAttr(resourceName, "name", updateChannel.Name),
 					resource.TestCheckResourceAttr(resourceName, "topic", updateChannel.Topic.Value),
-					//resource.TestCheckResourceAttr(resourceName, "is_private", createChannel.IsPrivate),
+					resource.TestCheckResourceAttr(resourceName, "purpose", updateChannel.Purpose.Value),
+					resource.TestCheckResourceAttr(resourceName, "is_private", fmt.Sprintf("%t", updateChannel.IsPrivate)),
 				),
 			},
 		},
 	})
 }
 
-func testAccSlackConversation(channelName string) slack.Channel {
-	var members []string
+func testAccSlackConversation(channelName string, members []string) slack.Channel {
 	channel := slack.Channel{
 		GroupConversation: slack.GroupConversation{
 			Name: channelName,
 			Topic: slack.Topic{
 				Value: fmt.Sprintf("Topic for %s", channelName),
+			},
+			Purpose: slack.Purpose{
+				Value: fmt.Sprintf("Purpose of %s", channelName),
 			},
 			Conversation: slack.Conversation{
 				IsPrivate: true,
@@ -104,10 +105,11 @@ func testAccSlackConversationConfig(c slack.Channel) string {
 
 	return fmt.Sprintf(`
 resource slack_conversation test {
-  name       = "%s"
-  topic      = "%s"
-  members    = [%s]
-  is_private = %t
+  name              = "%s"
+  topic             = "%s"
+  purpose           = "%s"
+  permanent_members = [%s]
+  is_private        = %t
 }
-`, c.Name, c.Topic.Value, strings.Join(members, ","), c.IsPrivate)
+`, c.Name, c.Topic.Value, c.Purpose.Value, strings.Join(members, ","), c.IsPrivate)
 }

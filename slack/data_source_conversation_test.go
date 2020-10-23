@@ -17,7 +17,8 @@ func TestAccSlackConversationDataSource_basic(t *testing.T) {
 
 	var providers []*schema.Provider
 	name := acctest.RandomWithPrefix("test-acc-slack-conversation-test")
-	createChannel := testAccSlackConversation(name)
+	var members = []string{nonAuthenticatedTestUserID}
+	createChannel := testAccSlackConversation(name, members)
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
@@ -42,6 +43,7 @@ func TestAccSlackConversationDataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttrPair(dataSourceName, "is_shared", resourceName, "is_shared"),
 					resource.TestCheckResourceAttrPair(dataSourceName, "is_ext_shared", resourceName, "is_ext_shared"),
 					resource.TestCheckResourceAttrPair(dataSourceName, "is_org_shared", resourceName, "is_org_shared"),
+					resource.TestCheckResourceAttrPair(dataSourceName, "is_general", resourceName, "is_general"),
 				),
 			},
 		},

@@ -20,11 +20,33 @@ func dataSourceConversation() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"permanent_members": {
+				Type: schema.TypeSet,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Computed: true,
+			},
+			"members": {
+				Type: schema.TypeSet,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Computed: true,
+			},
 			"topic": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
 			"purpose": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"created": {
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
+			"creator": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -48,12 +70,8 @@ func dataSourceConversation() *schema.Resource {
 				Type:     schema.TypeBool,
 				Computed: true,
 			},
-			"created": {
-				Type:     schema.TypeInt,
-				Computed: true,
-			},
-			"creator": {
-				Type:     schema.TypeString,
+			"is_general": {
+				Type:     schema.TypeBool,
 				Computed: true,
 			},
 		},
@@ -72,7 +90,14 @@ func dataSourceSlackConversationRead(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	err = updateChannelData(d, channel)
+	users, _, err := client.GetUsersInConversationContext(ctx, &slack.GetUsersInConversationParameters{
+		ChannelID: channel.ID,
+	})
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	err = updateChannelData(d, channel, users)
 	if err != nil {
 		return diag.FromErr(err)
 	}

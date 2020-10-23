@@ -23,17 +23,7 @@ func resourceSlackConversation() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"members": {
-				Type: schema.TypeSet,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional: true,
-			},
-			"is_private": {
-				Type:     schema.TypeBool,
-				Required: true,
-			},
+
 			"topic": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -41,6 +31,32 @@ func resourceSlackConversation() *schema.Resource {
 			"purpose": {
 				Type:     schema.TypeString,
 				Optional: true,
+			},
+			"permanent_members": {
+				Type: schema.TypeSet,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Optional: true,
+			},
+			"members": {
+				Type: schema.TypeSet,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Computed: true,
+			},
+			"created": {
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
+			"creator": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"is_private": {
+				Type:     schema.TypeBool,
+				Required: true,
 			},
 			"is_archived": {
 				Type:     schema.TypeBool,
@@ -59,12 +75,8 @@ func resourceSlackConversation() *schema.Resource {
 				Type:     schema.TypeBool,
 				Computed: true,
 			},
-			"created": {
-				Type:     schema.TypeInt,
-				Computed: true,
-			},
-			"creator": {
-				Type:     schema.TypeString,
+			"is_general": {
+				Type:     schema.TypeBool,
 				Computed: true,
 			},
 		},
@@ -82,7 +94,7 @@ func resourceSlackConversationCreate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	members := d.Get("members").(*schema.Set)
+	members := d.Get("permanent_members").(*schema.Set)
 	if members.Len() != 0 {
 		userIds := make([]string, len(members.List()))
 		for i, v := range members.List() {
@@ -96,6 +108,12 @@ func resourceSlackConversationCreate(ctx context.Context, d *schema.ResourceData
 
 	if topic, ok := d.GetOk("topic"); ok {
 		if _, err := client.SetTopicOfConversationContext(ctx, channel.ID, topic.(string)); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	if purpose, ok := d.GetOk("purpose"); ok {
+		if _, err := client.SetPurposeOfConversationContext(ctx, channel.ID, purpose.(string)); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -114,7 +132,14 @@ func resourceSlackConversationRead(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	err = updateChannelData(d, channel)
+	users, _, err := client.GetUsersInConversationContext(ctx, &slack.GetUsersInConversationParameters{
+		ChannelID: channel.ID,
+	})
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	err = updateChannelData(d, channel, users)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -130,19 +155,22 @@ func resourceSlackConversationUpdate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	if topic, ok := d.GetOk("topic"); ok {
+	if d.HasChange("topic") {
+		topic := d.Get("topic")
 		if _, err := client.SetTopicOfConversationContext(ctx, id, topic.(string)); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	if purpose, ok := d.GetOk("purpose"); ok {
+	if d.HasChange("purpose") {
+		purpose := d.Get("purpose")
 		if _, err := client.SetPurposeOfConversationContext(ctx, id, purpose.(string)); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	if isArchived, ok := d.GetOk("is_archived"); ok {
+	if d.HasChange("is_archived") {
+		isArchived := d.Get("is_archived")
 		if isArchived.(bool) {
 			if err := client.ArchiveConversationContext(ctx, id); err != nil {
 				if err.Error() != "already_archived" {

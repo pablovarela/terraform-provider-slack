@@ -3,16 +3,16 @@ subcategory: "Slack"
 page_title: "Slack: slack_conversation"
 ---
 
-# change_inventory_item Data Source
+# slack_conversation Data Source
 
-Use this data source to get information about an inventory item for use in other
+Use this data source to get information about a Slack conversation for use in other
 resources.
 
 ## Example Usage
 
 ```hcl
 data slack_conversation test {
-  name = "my-channel"
+  channel_id = "my-channel"
 }
 ```
 
@@ -26,7 +26,19 @@ The following arguments are supported:
 
 In addition to all arguments above, the following attributes are exported:
 
-* `name` - Name of the public or private channel.
-* `topic` - Topic for the channel.
-* `members` -  Members currently in the channel.
-* `is_private` - Whether the channel is private or not.
+* `name` - name of the public or private channel.
+* `permanent_members` - user IDs that are added to the channel if not already there.
+* `members` - user IDs of users in the channel.
+* `topic` - topic for the channel.
+* `purpose` - purpose of the channel.
+* `creator` - is the user ID of the member that created this channel.
+* `created` - is a unix timestamp.
+* `is_private` - means the conversation is privileged between two or more members.
+* `is_archived` - indicates a conversation is archived. Frozen in time.
+* `is_shared` - means the conversation is in some way shared between multiple workspaces.
+* `is_ext_shared` - represents this conversation as being part of a Shared Channel
+with a remote organization.
+* `is_org_shared` - explains whether this shared channel is shared between Enterprise
+Grid workspaces within the same organization.
+* `is_general` - will be true if this channel is the "general" channel that includes
+all regular team members.

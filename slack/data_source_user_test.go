@@ -59,6 +59,7 @@ data slack_user test {
  name = "pablo.varelapaz"
 }
 `
-	testUserID   = "U0150MARZEY"
-	testUserName = "pablo.varelapaz"
+	testUserID                 = "U0150MARZEY"
+	nonAuthenticatedTestUserID = "U014V8XMMB5"
+	testUserName               = "pablo.varelapaz"
 )
