@@ -37,7 +37,7 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 
 	token, ok := d.GetOk("token")
 	if !ok {
-		return nil, diag.Errorf("could not create slack client")
+		return nil, diag.Errorf("could not create slack client. Please provide a token.")
 	}
 	slackClient := slack.New(token.(string))
 	return slackClient, diags

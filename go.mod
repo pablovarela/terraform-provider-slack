@@ -43,7 +43,7 @@ require (
 	golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897 // indirect
 	golang.org/x/net v0.0.0-20201022231255-08b38378de70 // indirect
 	golang.org/x/sys v0.0.0-20201022201747-fb209a7c41cd // indirect
-	golang.org/x/tools v0.0.0-20201022215848-ffe8bce740af // indirect
+	golang.org/x/tools v0.0.0-20201023150057-2f4fa188d925 // indirect
 	gopkg.in/ini.v1 v1.62.0 // indirect
 	gotest.tools/gotestsum v0.5.4 // indirect
 )
