@@ -2,6 +2,7 @@ package slack
 
 import (
 	"context"
+	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/slack-go/slack"
@@ -12,10 +13,6 @@ func dataSourceUser() *schema.Resource {
 		ReadContext: dataSourceUserRead,
 
 		Schema: map[string]*schema.Schema{
-			"id": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
 			"name": {
 				Type:     schema.TypeString,
 				Required: true,
@@ -29,7 +26,7 @@ func dataSourceUserRead(ctx context.Context, d *schema.ResourceData, m interface
 
 	client := m.(*slack.Client)
 
-	users, err := client.GetUsers()
+	users, err := client.GetUsersContext(ctx)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -52,7 +49,9 @@ func dataSourceUserRead(ctx context.Context, d *schema.ResourceData, m interface
 	user := matchingUsers[0]
 
 	d.SetId(user.ID)
-	_ = d.Set("name", user.Name)
+	if err := d.Set("name", user.Name); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting name: %s", err))
+	}
 
 	if err := d.Set("name", user.Name); err != nil {
 		return diag.Errorf("error setting name: %s", err)

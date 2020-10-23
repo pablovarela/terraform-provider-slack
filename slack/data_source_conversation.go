@@ -5,7 +5,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/slack-go/slack"
-	"log"
 )
 
 func dataSourceConversation() *schema.Resource {
@@ -21,15 +20,28 @@ func dataSourceConversation() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"members": {
+				Type: schema.TypeSet,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Computed: true,
+			},
 			"topic": {
 				Type:     schema.TypeString,
 				Computed: true,
-				Optional: true,
 			},
 			"purpose": {
 				Type:     schema.TypeString,
 				Computed: true,
-				Optional: true,
+			},
+			"created": {
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
+			"creator": {
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 			"is_private": {
 				Type:     schema.TypeBool,
@@ -51,12 +63,8 @@ func dataSourceConversation() *schema.Resource {
 				Type:     schema.TypeBool,
 				Computed: true,
 			},
-			"created": {
-				Type:     schema.TypeInt,
-				Computed: true,
-			},
-			"creator": {
-				Type:     schema.TypeString,
+			"is_general": {
+				Type:     schema.TypeBool,
 				Computed: true,
 			},
 		},
@@ -64,30 +72,14 @@ func dataSourceConversation() *schema.Resource {
 }
 
 func dataSourceSlackConversationRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	var diags diag.Diagnostics
-
 	client := m.(*slack.Client)
 
 	channelID := d.Get("channel_id").(string)
 
-	log.Printf("[DEBUG] Reading Conversation: %s", channelID)
 	channel, err := client.GetConversationInfoContext(ctx, channelID, false)
-
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(channel.ID)
-	_ = d.Set("name", channel.Name)
-	_ = d.Set("topic", channel.Topic.Value)
-	_ = d.Set("purpose", channel.Purpose.Value)
-	_ = d.Set("is_private", channel.IsPrivate)
-	_ = d.Set("is_archived", channel.IsArchived)
-	_ = d.Set("is_shared", channel.IsShared)
-	_ = d.Set("is_ext_shared", channel.IsExtShared)
-	_ = d.Set("is_org_shared", channel.IsOrgShared)
-	_ = d.Set("created", channel.Created)
-	_ = d.Set("creator", channel.Creator)
-
-	return diags
+	return updateChannelData(d, channel)
 }

@@ -7,7 +7,7 @@ data slack_user aws_chat_bot {
 }
 
 resource slack_conversation aws_chatbot {
-  name       = "AWS Chatbot Notifications"
+  name       = "aws-chat-bot-notifications"
   topic      = "AWS ChatBot Notifications"
   members    = [data.slack_user.aws_chat_bot.id]
   is_private = true
