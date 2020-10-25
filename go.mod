@@ -15,7 +15,7 @@ require (
 	github.com/gordonklaus/ineffassign v0.0.0-20200809085317-e36bfde3bb78 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-hclog v0.14.1 // indirect
-	github.com/hashicorp/go-multierror v1.1.0 // indirect
+	github.com/hashicorp/go-multierror v1.1.0
 	github.com/hashicorp/hcl/v2 v2.7.0 // indirect
 	github.com/hashicorp/terraform-json v0.6.0 // indirect
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.0.4
