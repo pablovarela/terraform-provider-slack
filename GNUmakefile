@@ -1,6 +1,6 @@
 TEST?=$$(go list ./... |grep -v 'vendor')
-SWEEP_DIR?=./change
-SWEEP?=$(CHANGE_ADDRESS)
+SWEEP_DIR?=./slack
+SWEEP?=eu-west-1
 GOFMT_FILES?=$$(find . -name '*.go' |grep -v vendor)
 
 default: testacc bin

@@ -3,23 +3,63 @@ package slack
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/slack-go/slack"
 	"github.com/stretchr/testify/require"
+	"log"
 	"sort"
 	"strconv"
 	"strings"
 	"testing"
 )
 
+const (
+	namePrefix = "test-acc-slack-conversation-test"
+)
+
+func init() {
+	resource.AddTestSweepers("slack_conversation", &resource.Sweeper{
+		Name: "slack_conversation",
+		F: func(string) error {
+			client, err := sharedSlackClient()
+			if err != nil {
+				return fmt.Errorf("error getting client: %s", err)
+			}
+			c := client.(*slack.Client)
+			channels, _, err := c.GetConversations(&slack.GetConversationsParameters{
+				ExcludeArchived: "true",
+				Types:           []string{"public_channel", "private_channel"},
+			})
+			if err != nil {
+				return fmt.Errorf("[ERROR] error getting channels: %s", err)
+			}
+			var sweeperErrs *multierror.Error
+			for _, channel := range channels {
+				if strings.HasPrefix(channel.Name, namePrefix) {
+					err := c.ArchiveConversationContext(context.Background(), channel.ID)
+					if err != nil {
+						if err.Error() != "already_archived" {
+							sweeperErr := fmt.Errorf("archiving channel %s during sweep: %s", channel.Name, err)
+							log.Printf("[ERROR] %s", sweeperErr)
+							sweeperErrs = multierror.Append(sweeperErrs, err)
+						}
+					}
+					fmt.Printf("[INFO] archived channel %s during sweep\n", channel.Name)
+				}
+			}
+			return sweeperErrs.ErrorOrNil()
+		},
+	})
+}
+
 func TestAccSlackConversationTest(t *testing.T) {
 	t.Parallel()
 
 	resourceName := "slack_conversation.test"
-	namePrefix := "test-acc-slack-conversation-test"
 
 	t.Run("update name, topic and purpose", func(t *testing.T) {
 		name := acctest.RandomWithPrefix(namePrefix)
