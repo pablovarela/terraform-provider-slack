@@ -73,13 +73,6 @@ func dataSourceConversation() *schema.Resource {
 
 func dataSourceSlackConversationRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*slack.Client)
-
 	channelID := d.Get("channel_id").(string)
-
-	channel, err := client.GetConversationInfoContext(ctx, channelID, false)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	return updateChannelData(d, channel)
+	return readChannelInfo(ctx, d, client, channelID)
 }

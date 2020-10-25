@@ -44,6 +44,7 @@ func TestAccSlackConversationDataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttrPair(dataSourceName, "is_ext_shared", resourceName, "is_ext_shared"),
 					resource.TestCheckResourceAttrPair(dataSourceName, "is_org_shared", resourceName, "is_org_shared"),
 					resource.TestCheckResourceAttrPair(dataSourceName, "is_general", resourceName, "is_general"),
+					resource.TestCheckResourceAttrPair(dataSourceName, "members", resourceName, "members"),
 				),
 			},
 		},

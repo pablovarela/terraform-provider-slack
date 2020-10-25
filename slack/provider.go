@@ -43,7 +43,22 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 	return slackClient, diags
 }
 
-func updateChannelData(d *schema.ResourceData, channel *slack.Channel) diag.Diagnostics {
+func readChannelInfo(ctx context.Context, d *schema.ResourceData, client *slack.Client, id string) diag.Diagnostics {
+	channel, err := client.GetConversationInfoContext(ctx, id, false)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	users, _, err := client.GetUsersInConversationContext(ctx, &slack.GetUsersInConversationParameters{
+		ChannelID: channel.ID,
+	})
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	return updateChannelData(d, channel, users)
+}
+
+func updateChannelData(d *schema.ResourceData, channel *slack.Channel, users []string) diag.Diagnostics {
 	if channel.ID == "" {
 		return diag.Errorf("error setting id: returned channel does not have an ID")
 	}
@@ -93,7 +108,7 @@ func updateChannelData(d *schema.ResourceData, channel *slack.Channel) diag.Diag
 		return diag.Errorf("error setting is_general: %s", err)
 	}
 
-	if err := d.Set("members", channel.Members); err != nil {
+	if err := d.Set("members", users); err != nil {
 		return diag.Errorf("error setting members: %s", err)
 	}
 

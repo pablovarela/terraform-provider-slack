@@ -1,4 +1,3 @@
-CHANGE_HOST?=localhost
 TEST?=$$(go list ./... |grep -v 'vendor')
 SWEEP_DIR?=./change
 SWEEP?=$(CHANGE_ADDRESS)
@@ -13,7 +12,6 @@ bin:
 tools:
 	@echo "==> Installing external tools..."
 	GO111MODULE=on go get -u golang.org/x/lint/golint
-	GO111MODULE=on go get -u gotest.tools/gotestsum
 	GO111MODULE=on go get -u github.com/gordonklaus/ineffassign
 	GO111MODULE=on go get -u github.com/client9/misspell/cmd/misspell
 	GO111MODULE=on go get -u github.com/katbyte/terrafmt
@@ -26,7 +24,7 @@ fmt:
 fmtcheck:
 	@sh -c "'$(CURDIR)/scripts/gofmtcheck.sh'"
 
-lint: tools fmtcheck vet docs
+lint: tools fmtcheck vet #docs
 	@echo "==> Checking source code against linters..."
 	golint -set_exit_status $$(find . -type d | grep -v vendor)
 	ineffassign .
@@ -40,7 +38,7 @@ test: lint
 
 testacc: lint
 	@echo "==> Running acceptance tests..."
-	TF_ACC=1 CHANGE_HOST=$(CHANGE_HOST) go test $(TEST)
+	TF_ACC=1 go test -v $(TEST)
 
 vet:
 	@echo "go vet ."
@@ -82,4 +80,4 @@ docscheck:
 		-require-resource-subcategory
 	@misspell -error -source text CHANGELOG.md
 
-.PHONY: build tools fmt fmtcheck lint sweep test testacc vet depscheck docs docs-lint docs-lint-fix docscheck change-image
+.PHONY: build tools fmt fmtcheck lint sweep test testacc vet depscheck docs docs-lint docs-lint-fix docscheck

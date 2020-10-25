@@ -124,14 +124,8 @@ func resourceSlackConversationCreate(ctx context.Context, d *schema.ResourceData
 
 func resourceSlackConversationRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*slack.Client)
-
 	id := d.Id()
-	channel, err := client.GetConversationInfoContext(ctx, id, false)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	return updateChannelData(d, channel)
+	return readChannelInfo(ctx, d, client, id)
 }
 
 func resourceSlackConversationUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
