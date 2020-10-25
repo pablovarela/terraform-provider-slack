@@ -20,14 +20,6 @@ func dataSourceConversation() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"members": {
-				Type: schema.TypeSet,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Set:      schema.HashString,
-				Computed: true,
-			},
 			"topic": {
 				Type:     schema.TypeString,
 				Computed: true,

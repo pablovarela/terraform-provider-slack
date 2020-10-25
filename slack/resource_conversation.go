@@ -6,7 +6,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/slack-go/slack"
-	"sort"
 )
 
 func resourceSlackConversation() *schema.Resource {
@@ -41,14 +40,6 @@ func resourceSlackConversation() *schema.Resource {
 				},
 				Set:      schema.HashString,
 				Optional: true,
-			},
-			"members": {
-				Type: schema.TypeSet,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Set:      schema.HashString,
-				Computed: true,
 			},
 			"created": {
 				Type:     schema.TypeInt,
@@ -275,11 +266,6 @@ func updateChannelData(d *schema.ResourceData, channel *slack.Channel, users []s
 
 	if err := d.Set("is_general", channel.IsGeneral); err != nil {
 		return diag.Errorf("error setting is_general: %s", err)
-	}
-
-	sort.Strings(users)
-	if err := d.Set("members", users); err != nil {
-		return diag.Errorf("error setting members: %s", err)
 	}
 
 	return nil

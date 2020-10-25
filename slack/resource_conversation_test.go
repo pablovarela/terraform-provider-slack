@@ -98,7 +98,6 @@ func testSlackConversationUpdate(t *testing.T, resourceName string, createChanne
 }
 
 func testCheckResourceAttrBasic(resourceName string, channel slack.Channel) resource.TestCheckFunc {
-//	members := append(channel.Members, testUserCreator.id)
 	return resource.ComposeTestCheckFunc(
 		resource.TestCheckResourceAttr(resourceName, "name", channel.Name),
 		resource.TestCheckResourceAttr(resourceName, "topic", channel.Topic.Value),
@@ -111,7 +110,6 @@ func testCheckResourceAttrBasic(resourceName string, channel slack.Channel) reso
 		resource.TestCheckResourceAttr(resourceName, "is_ext_shared", fmt.Sprintf("%t", channel.IsExtShared)),
 		resource.TestCheckResourceAttr(resourceName, "is_general", fmt.Sprintf("%t", channel.IsGeneral)),
 		testCheckResourceAttrSlice(resourceName, "permanent_members", channel.Members),
-//		testCheckResourceAttrSlice(resourceName, "members", members),
 	)
 }
 

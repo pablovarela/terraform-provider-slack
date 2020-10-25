@@ -34,7 +34,6 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
 * `id` - The channel ID (e.g. C015QDUB7ME).
-* `members` - user IDs of users in the channel.
 * `creator` - is the user ID of the member that created this channel.
 * `created` - is a unix timestamp.
 * `is_shared` - means the conversation is in some way shared between multiple workspaces.
