@@ -24,7 +24,7 @@ fmt:
 fmtcheck:
 	@sh -c "'$(CURDIR)/scripts/gofmtcheck.sh'"
 
-lint: tools fmtcheck vet #docs
+lint: tools fmtcheck vet docs
 	@echo "==> Checking source code against linters..."
 	golint -set_exit_status $$(find . -type d | grep -v vendor)
 	ineffassign .
