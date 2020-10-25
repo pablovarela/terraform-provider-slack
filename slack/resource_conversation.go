@@ -129,11 +129,8 @@ func resourceSlackConversationCreate(ctx context.Context, d *schema.ResourceData
 
 func updateChannelMembers(d *schema.ResourceData, client *slack.Client, channelID string) error {
 	members := d.Get("permanent_members").(*schema.Set)
-	//	fmt.Printf("[DEBUG] updating members: %d\n", members.Len())
-
 	if members.Len() != 0 {
 		userIds := schemaSetToSlice(members)
-		//		fmt.Printf("[DEBUG] updating members %s\n", userIds)
 
 		if _, err := client.InviteUsersToConversation(channelID, userIds...); err != nil {
 			if err.Error() != "already_in_channel" {
@@ -155,8 +152,10 @@ func resourceSlackConversationUpdate(ctx context.Context, d *schema.ResourceData
 
 	id := d.Id()
 
-	if _, err := client.RenameConversationContext(ctx, id, d.Get("name").(string)); err != nil {
-		return diag.Errorf("couldn't rename conversation: %s", err)
+	if d.HasChange("name") {
+		if _, err := client.RenameConversationContext(ctx, id, d.Get("name").(string)); err != nil {
+			return diag.Errorf("couldn't rename conversation: %s", err)
+		}
 	}
 
 	if d.HasChange("topic") {
