@@ -111,10 +111,20 @@ func updateChannelData(d *schema.ResourceData, channel *slack.Channel, users []s
 	}
 
 	sort.Strings(users)
-	fmt.Printf("[DEBUG] users:%s\n", users)
+	fmt.Printf("[DEBUG] current users:%s\n", schemaSetToSlice(d.Get("members").(*schema.Set)))
+	fmt.Printf("[DEBUG] new users:%s\n", users)
 	if err := d.Set("members", users); err != nil {
 		return diag.Errorf("error setting members: %s", err)
 	}
+	fmt.Printf("[DEBUG] updated users:%s\n", schemaSetToSlice(d.Get("members").(*schema.Set)))
 
 	return nil
+}
+
+func schemaSetToSlice(set *schema.Set) []string {
+	s := make([]string, len(set.List()))
+	for i, v := range set.List() {
+		s[i] = v.(string)
+	}
+	return s
 }

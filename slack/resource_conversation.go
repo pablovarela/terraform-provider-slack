@@ -123,10 +123,7 @@ func updateChannelMembers(d *schema.ResourceData, client *slack.Client, channelI
 	fmt.Printf("[DEBUG] updating members: %d\n", members.Len())
 
 	if members.Len() != 0 {
-		userIds := make([]string, len(members.List()))
-		for i, v := range members.List() {
-			userIds[i] = v.(string)
-		}
+		userIds := schemaSetToSlice(members)
 		fmt.Printf("[DEBUG] updating members %s\n", userIds)
 
 		if _, err := client.InviteUsersToConversation(channelID, userIds...); err != nil {

@@ -21,13 +21,11 @@ func TestAccSlackConversationTest(t *testing.T) {
 
 	name := acctest.RandomWithPrefix("test-acc-slack-conversation-test")
 	var permanentMembers []string
-	var expectedMembers = []string{testUserCreator.id}
 	createChannel := testAccSlackConversation(name, permanentMembers)
 
 	var updatedPermanentMembers = []string{testUser00.id}
 	sort.Strings(updatedPermanentMembers)
-	var updatedExpectedMembers = []string{testUserCreator.id, testUser00.id}
-	sort.Strings(updatedExpectedMembers)
+
 	updateName := acctest.RandomWithPrefix("test-acc-slack-conversation-test-update")
 	updateChannel := testAccSlackConversation(updateName, updatedPermanentMembers)
 	updateChannel.ID = createChannel.ID
@@ -43,20 +41,7 @@ func TestAccSlackConversationTest(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: testAccSlackConversationConfig(createChannel),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "name", createChannel.Name),
-					resource.TestCheckResourceAttr(resourceName, "topic", createChannel.Topic.Value),
-					resource.TestCheckResourceAttr(resourceName, "purpose", createChannel.Purpose.Value),
-					resource.TestCheckResourceAttr(resourceName, "creator", testUserCreator.id),
-					resource.TestCheckResourceAttr(resourceName, "is_private", fmt.Sprintf("%t", createChannel.IsPrivate)),
-					resource.TestCheckResourceAttr(resourceName, "is_archived", fmt.Sprintf("%t", createChannel.IsArchived)),
-					resource.TestCheckResourceAttr(resourceName, "is_shared", fmt.Sprintf("%t", createChannel.IsShared)),
-					resource.TestCheckResourceAttr(resourceName, "is_org_shared", fmt.Sprintf("%t", createChannel.IsOrgShared)),
-					resource.TestCheckResourceAttr(resourceName, "is_ext_shared", fmt.Sprintf("%t", createChannel.IsExtShared)),
-					resource.TestCheckResourceAttr(resourceName, "is_general", fmt.Sprintf("%t", createChannel.IsGeneral)),
-					testCheckResourceAttrSlice(resourceName, "permanent_members", permanentMembers),
-					testCheckResourceAttrSlice(resourceName, "members", expectedMembers),
-				),
+				Check:  testCheckResourceAttrBasic(resourceName, createChannel),
 			},
 			{
 				ResourceName:            resourceName,
@@ -66,23 +51,28 @@ func TestAccSlackConversationTest(t *testing.T) {
 			},
 			{
 				Config: testAccSlackConversationConfig(updateChannel),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "name", updateChannel.Name),
-					resource.TestCheckResourceAttr(resourceName, "topic", updateChannel.Topic.Value),
-					resource.TestCheckResourceAttr(resourceName, "purpose", updateChannel.Purpose.Value),
-					resource.TestCheckResourceAttr(resourceName, "creator", testUserCreator.id),
-					resource.TestCheckResourceAttr(resourceName, "is_private", fmt.Sprintf("%t", updateChannel.IsPrivate)),
-					resource.TestCheckResourceAttr(resourceName, "is_archived", fmt.Sprintf("%t", updateChannel.IsArchived)),
-					resource.TestCheckResourceAttr(resourceName, "is_shared", fmt.Sprintf("%t", updateChannel.IsShared)),
-					resource.TestCheckResourceAttr(resourceName, "is_org_shared", fmt.Sprintf("%t", updateChannel.IsOrgShared)),
-					resource.TestCheckResourceAttr(resourceName, "is_ext_shared", fmt.Sprintf("%t", updateChannel.IsExtShared)),
-					resource.TestCheckResourceAttr(resourceName, "is_general", fmt.Sprintf("%t", updateChannel.IsGeneral)),
-					testCheckResourceAttrSlice(resourceName, "permanent_members", updatedPermanentMembers),
-					//testCheckResourceAttrSlice(resourceName, "members", updatedExpectedMembers),
-				),
+				Check:  testCheckResourceAttrBasic(resourceName, updateChannel),
 			},
 		},
 	})
+}
+
+func testCheckResourceAttrBasic(resourceName string, channel slack.Channel) resource.TestCheckFunc {
+	//	members := append(channel.Members, testUserCreator.id)
+	return resource.ComposeTestCheckFunc(
+		resource.TestCheckResourceAttr(resourceName, "name", channel.Name),
+		resource.TestCheckResourceAttr(resourceName, "topic", channel.Topic.Value),
+		resource.TestCheckResourceAttr(resourceName, "purpose", channel.Purpose.Value),
+		resource.TestCheckResourceAttr(resourceName, "creator", testUserCreator.id),
+		resource.TestCheckResourceAttr(resourceName, "is_private", fmt.Sprintf("%t", channel.IsPrivate)),
+		resource.TestCheckResourceAttr(resourceName, "is_archived", fmt.Sprintf("%t", channel.IsArchived)),
+		resource.TestCheckResourceAttr(resourceName, "is_shared", fmt.Sprintf("%t", channel.IsShared)),
+		resource.TestCheckResourceAttr(resourceName, "is_org_shared", fmt.Sprintf("%t", channel.IsOrgShared)),
+		resource.TestCheckResourceAttr(resourceName, "is_ext_shared", fmt.Sprintf("%t", channel.IsExtShared)),
+		resource.TestCheckResourceAttr(resourceName, "is_general", fmt.Sprintf("%t", channel.IsGeneral)),
+		testCheckResourceAttrSlice(resourceName, "permanent_members", channel.Members),
+		//testCheckResourceAttrSlice(resourceName, "members", members),
+	)
 }
 
 func testCheckResourceAttrSlice(resourceName string, key string, a []string) resource.TestCheckFunc {
