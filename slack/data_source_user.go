@@ -28,7 +28,7 @@ func dataSourceUserRead(ctx context.Context, d *schema.ResourceData, m interface
 
 	users, err := client.GetUsersContext(ctx)
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.Errorf("couldn't get workspace users: %s", err)
 	}
 
 	var matchingUsers []slack.User

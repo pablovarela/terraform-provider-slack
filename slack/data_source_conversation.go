@@ -20,13 +20,6 @@ func dataSourceConversation() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"members": {
-				Type: schema.TypeSet,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Computed: true,
-			},
 			"topic": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -73,13 +66,6 @@ func dataSourceConversation() *schema.Resource {
 
 func dataSourceSlackConversationRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*slack.Client)
-
 	channelID := d.Get("channel_id").(string)
-
-	channel, err := client.GetConversationInfoContext(ctx, channelID, false)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	return updateChannelData(d, channel)
+	return readChannelInfo(ctx, d, client, channelID)
 }

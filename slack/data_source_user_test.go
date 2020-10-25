@@ -26,8 +26,8 @@ func TestAccSlackUserDataSource_basic(t *testing.T) {
 				Config: testAccCheckSlackUserDataSourceConfigExistent,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckSlackUserDataSourceID(dataSourceName),
-					resource.TestCheckResourceAttr(dataSourceName, "name", testUserName),
-					resource.TestCheckResourceAttr(dataSourceName, "id", testUserID),
+					resource.TestCheckResourceAttr(dataSourceName, "name", testUserCreator.name),
+					resource.TestCheckResourceAttr(dataSourceName, "id", testUserCreator.id),
 				),
 			},
 		},
@@ -42,7 +42,7 @@ func testAccCheckSlackUserDataSourceID(n string) resource.TestCheckFunc {
 		}
 
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("slack conversation data source ID not set")
+			return fmt.Errorf("slack conversation data source id not set")
 		}
 		return nil
 	}
@@ -54,12 +54,12 @@ data slack_user test {
  name = "non-existent"
 }
 `
-	testAccCheckSlackUserDataSourceConfigExistent = `
+)
+
+var (
+	testAccCheckSlackUserDataSourceConfigExistent = fmt.Sprintf(`
 data slack_user test {
- name = "pablo.varelapaz"
+ name = "%s"
 }
-`
-	testUserID                 = "U0150MARZEY"
-	nonAuthenticatedTestUserID = "U014V8XMMB5"
-	testUserName               = "pablo.varelapaz"
+`, testUserCreator.name)
 )

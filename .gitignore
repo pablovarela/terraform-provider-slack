@@ -205,3 +205,6 @@ tags
 
 terraform-provider-slack
 terraform-provider-slack_*
+/examples/terraform.tfstate
+/examples/terraform.tfstate.backup
+/examples/.terraform/

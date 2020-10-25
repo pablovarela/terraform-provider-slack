@@ -6,7 +6,8 @@ require (
 	github.com/agext/levenshtein v1.2.3 // indirect
 	github.com/armon/go-radix v1.0.0 // indirect
 	github.com/bflad/tfproviderdocs v0.7.0 // indirect
-	github.com/bmatcuk/doublestar v1.3.2 // indirect
+	github.com/bmatcuk/doublestar v1.3.3 // indirect
+	github.com/davecgh/go-spew v1.1.1
 	github.com/fatih/color v1.9.0 // indirect
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/google/go-cmp v0.5.2 // indirect
@@ -41,9 +42,9 @@ require (
 	github.com/stretchr/testify v1.6.1
 	github.com/zclconf/go-cty v1.7.0 // indirect
 	golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897 // indirect
-	golang.org/x/net v0.0.0-20201022231255-08b38378de70 // indirect
-	golang.org/x/sys v0.0.0-20201022201747-fb209a7c41cd // indirect
-	golang.org/x/tools v0.0.0-20201023150057-2f4fa188d925 // indirect
+	golang.org/x/net v0.0.0-20201024042810-be3efd7ff127 // indirect
+	golang.org/x/sys v0.0.0-20201024232916-9f70ab9862d5 // indirect
+	golang.org/x/tools v0.0.0-20201023174141-c8cfbd0f21e6 // indirect
 	gopkg.in/ini.v1 v1.62.0 // indirect
 	gotest.tools/gotestsum v0.5.4 // indirect
 )
