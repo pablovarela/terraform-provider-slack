@@ -114,17 +114,26 @@ func resourceSlackConversationCreate(ctx context.Context, d *schema.ResourceData
 		}
 	}
 
+	if isArchived, ok := d.GetOk("is_archived"); ok {
+		if isArchived.(bool) {
+			err := archiveConversationWithContext(ctx, client, channel.ID)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+	}
+
 	d.SetId(channel.ID)
 	return resourceSlackConversationRead(ctx, d, m)
 }
 
 func updateChannelMembers(d *schema.ResourceData, client *slack.Client, channelID string) error {
 	members := d.Get("permanent_members").(*schema.Set)
-	fmt.Printf("[DEBUG] updating members: %d\n", members.Len())
+	//	fmt.Printf("[DEBUG] updating members: %d\n", members.Len())
 
 	if members.Len() != 0 {
 		userIds := schemaSetToSlice(members)
-		fmt.Printf("[DEBUG] updating members %s\n", userIds)
+		//		fmt.Printf("[DEBUG] updating members %s\n", userIds)
 
 		if _, err := client.InviteUsersToConversation(channelID, userIds...); err != nil {
 			if err.Error() != "already_in_channel" {

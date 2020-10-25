@@ -2,7 +2,6 @@ package slack
 
 import (
 	"context"
-	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/slack-go/slack"
@@ -111,12 +110,12 @@ func updateChannelData(d *schema.ResourceData, channel *slack.Channel, users []s
 	}
 
 	sort.Strings(users)
-	fmt.Printf("[DEBUG] current users:%s\n", schemaSetToSlice(d.Get("members").(*schema.Set)))
-	fmt.Printf("[DEBUG] new users:%s\n", users)
+	//	fmt.Printf("[DEBUG] current users:%s\n", schemaSetToSlice(d.Get("members").(*schema.Set)))
+	//	fmt.Printf("[DEBUG] new users:%s\n", users)
 	if err := d.Set("members", users); err != nil {
 		return diag.Errorf("error setting members: %s", err)
 	}
-	fmt.Printf("[DEBUG] updated users:%s\n", schemaSetToSlice(d.Get("members").(*schema.Set)))
+	//	fmt.Printf("[DEBUG] updated users:%s\n", schemaSetToSlice(d.Get("members").(*schema.Set)))
 
 	return nil
 }

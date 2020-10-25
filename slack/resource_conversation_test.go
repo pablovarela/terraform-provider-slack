@@ -18,18 +18,52 @@ func TestAccSlackConversationTest(t *testing.T) {
 	t.Parallel()
 
 	resourceName := "slack_conversation.test"
+	namePrefix := "test-acc-slack-conversation-test"
 
-	name := acctest.RandomWithPrefix("test-acc-slack-conversation-test")
-	var permanentMembers []string
-	createChannel := testAccSlackConversation(name, permanentMembers)
+	t.Run("test update name, topic and purpose", func(t *testing.T) {
+		name := acctest.RandomWithPrefix(namePrefix)
+		createChannel := testAccSlackConversation(name)
 
-	var updatedPermanentMembers = []string{testUser00.id}
-	sort.Strings(updatedPermanentMembers)
+		updateName := acctest.RandomWithPrefix(fmt.Sprintf("%s-update", namePrefix))
+		updateChannel := testAccSlackConversation(updateName)
+		updateChannel.ID = createChannel.ID
 
-	updateName := acctest.RandomWithPrefix("test-acc-slack-conversation-test-update")
-	updateChannel := testAccSlackConversation(updateName, updatedPermanentMembers)
-	updateChannel.ID = createChannel.ID
+		testSlackConversationUpdate(t, resourceName, createChannel, updateChannel)
+	})
 
+	t.Run("test archive channel", func(t *testing.T) {
+		name := acctest.RandomWithPrefix(namePrefix)
+		createChannel := testAccSlackConversationWithMembers(name, []string{testUser00.id})
+
+		updateChannel := createChannel
+		updateChannel.IsArchived = true
+
+		testSlackConversationUpdate(t, resourceName, createChannel, updateChannel)
+	})
+
+	t.Run("test unarchive channel", func(t *testing.T) {
+		name := acctest.RandomWithPrefix(namePrefix)
+		createChannel := testAccSlackConversationWithMembers(name, []string{testUser00.id})
+		createChannel.IsArchived = true
+
+		updateChannel := createChannel
+		updateChannel.IsArchived = false
+
+		testSlackConversationUpdate(t, resourceName, createChannel, updateChannel)
+	})
+
+	//t.Run("test update permanent members", func(t *testing.T) {
+	//	name := acctest.RandomWithPrefix(namePrefix)
+	//	createChannel := testAccSlackConversationWithMembers(name, []string{testUser00.id})
+	//
+	//	updateChannel := createChannel
+	//	updateChannel.Members = []string{testUser00.id, testUser01.id}
+	//
+	//	testSlackConversationUpdate(t, resourceName, createChannel, updateChannel)
+	//})
+}
+
+func testSlackConversationUpdate(t *testing.T, resourceName string, createChannel slack.Channel, updateChannel slack.Channel) {
 	var providers []*schema.Provider
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -58,7 +92,7 @@ func TestAccSlackConversationTest(t *testing.T) {
 }
 
 func testCheckResourceAttrBasic(resourceName string, channel slack.Channel) resource.TestCheckFunc {
-	//	members := append(channel.Members, testUserCreator.id)
+	members := append(channel.Members, testUserCreator.id)
 	return resource.ComposeTestCheckFunc(
 		resource.TestCheckResourceAttr(resourceName, "name", channel.Name),
 		resource.TestCheckResourceAttr(resourceName, "topic", channel.Topic.Value),
@@ -71,7 +105,7 @@ func testCheckResourceAttrBasic(resourceName string, channel slack.Channel) reso
 		resource.TestCheckResourceAttr(resourceName, "is_ext_shared", fmt.Sprintf("%t", channel.IsExtShared)),
 		resource.TestCheckResourceAttr(resourceName, "is_general", fmt.Sprintf("%t", channel.IsGeneral)),
 		testCheckResourceAttrSlice(resourceName, "permanent_members", channel.Members),
-		//testCheckResourceAttrSlice(resourceName, "members", members),
+		testCheckResourceAttrSlice(resourceName, "members", members),
 	)
 }
 
@@ -90,7 +124,12 @@ func testCheckResourceAttrSlice(resourceName string, key string, a []string) res
 	return resource.ComposeTestCheckFunc(tests...)
 }
 
-func testAccSlackConversation(channelName string, members []string) slack.Channel {
+func testAccSlackConversation(channelName string) slack.Channel {
+	return testAccSlackConversationWithMembers(channelName, []string{})
+}
+
+func testAccSlackConversationWithMembers(channelName string, members []string) slack.Channel {
+	sort.Strings(members)
 	channel := slack.Channel{
 		GroupConversation: slack.GroupConversation{
 			Name: channelName,
@@ -138,6 +177,7 @@ resource slack_conversation test {
   purpose           = "%s"
   permanent_members = [%s]
   is_private        = %t
+  is_archived       = %t
 }
-`, c.Name, c.Topic.Value, c.Purpose.Value, strings.Join(members, ","), c.IsPrivate)
+`, c.Name, c.Topic.Value, c.Purpose.Value, strings.Join(members, ","), c.IsPrivate, c.IsArchived)
 }
