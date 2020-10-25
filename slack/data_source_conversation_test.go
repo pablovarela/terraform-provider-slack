@@ -17,7 +17,7 @@ func TestAccSlackConversationDataSource_basic(t *testing.T) {
 
 	var providers []*schema.Provider
 	name := acctest.RandomWithPrefix("test-acc-slack-conversation-test")
-	var members = []string{nonAuthenticatedTestUserID}
+	var members = []string{testUser00.id}
 	createChannel := testAccSlackConversation(name, members)
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -59,7 +59,7 @@ func testAccCheckSlackConversationDataSourceID(n string) resource.TestCheckFunc 
 		}
 
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("slack conversation data source ID not set")
+			return fmt.Errorf("slack conversation data source id not set")
 		}
 		return nil
 	}

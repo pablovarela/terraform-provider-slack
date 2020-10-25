@@ -6,6 +6,28 @@ import (
 	"testing"
 )
 
+type testUser struct {
+	id   string
+	name string
+}
+
+var (
+	testUserCreator = testUser{
+		id:   "U01D6L97N0M",
+		name: "contact",
+	}
+
+	testUser00 = testUser{
+		id:   "U01D31S1GUE",
+		name: "contact_test-user-ter",
+	}
+
+	testUser01 = testUser{
+		id:   "U01DZK10L1W",
+		name: "contact_test-user-206",
+	}
+)
+
 var testAccProvider *schema.Provider
 var testAccProviderFactories func(providers *[]*schema.Provider) map[string]func() (*schema.Provider, error)
 

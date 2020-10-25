@@ -2,9 +2,11 @@ package slack
 
 import (
 	"context"
+	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/slack-go/slack"
+	"sort"
 )
 
 // Provider returns a *schema.Provider
@@ -46,21 +48,21 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 func readChannelInfo(ctx context.Context, d *schema.ResourceData, client *slack.Client, id string) diag.Diagnostics {
 	channel, err := client.GetConversationInfoContext(ctx, id, false)
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.Errorf("couldn't get conversation info for %s: %s", id, err)
 	}
 
 	users, _, err := client.GetUsersInConversationContext(ctx, &slack.GetUsersInConversationParameters{
 		ChannelID: channel.ID,
 	})
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.Errorf("couldn't get users in conversation for %s: %s", channel.ID, err)
 	}
 	return updateChannelData(d, channel, users)
 }
 
 func updateChannelData(d *schema.ResourceData, channel *slack.Channel, users []string) diag.Diagnostics {
 	if channel.ID == "" {
-		return diag.Errorf("error setting id: returned channel does not have an ID")
+		return diag.Errorf("error setting id: returned channel does not have an id")
 	}
 	d.SetId(channel.ID)
 
@@ -108,6 +110,8 @@ func updateChannelData(d *schema.ResourceData, channel *slack.Channel, users []s
 		return diag.Errorf("error setting is_general: %s", err)
 	}
 
+	sort.Strings(users)
+	fmt.Printf("[DEBUG] users:%s\n", users)
 	if err := d.Set("members", users); err != nil {
 		return diag.Errorf("error setting members: %s", err)
 	}

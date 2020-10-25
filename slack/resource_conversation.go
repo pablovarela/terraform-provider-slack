@@ -2,6 +2,7 @@ package slack
 
 import (
 	"context"
+	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/slack-go/slack"
@@ -37,6 +38,7 @@ func resourceSlackConversation() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
+				Set:      schema.HashString,
 				Optional: true,
 			},
 			"members": {
@@ -44,6 +46,7 @@ func resourceSlackConversation() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
+				Set:      schema.HashString,
 				Computed: true,
 			},
 			"created": {
@@ -91,35 +94,48 @@ func resourceSlackConversationCreate(ctx context.Context, d *schema.ResourceData
 
 	channel, err := client.CreateConversationContext(ctx, name, isPrivate)
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.Errorf("could create conversation %s: %s", name, err)
 	}
 
-	members := d.Get("permanent_members").(*schema.Set)
-	if members.Len() != 0 {
-		userIds := make([]string, len(members.List()))
-		for i, v := range members.List() {
-			userIds[i] = v.(string)
-		}
-		_, err = client.InviteUsersToConversation(channel.ID, userIds...)
-		if err != nil {
-			return diag.FromErr(err)
-		}
+	err = updateChannelMembers(d, client, channel.ID)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	if topic, ok := d.GetOk("topic"); ok {
 		if _, err := client.SetTopicOfConversationContext(ctx, channel.ID, topic.(string)); err != nil {
-			return diag.FromErr(err)
+			return diag.Errorf("couldn't set conversation topic %s: %s", topic.(string), err)
 		}
 	}
 
 	if purpose, ok := d.GetOk("purpose"); ok {
 		if _, err := client.SetPurposeOfConversationContext(ctx, channel.ID, purpose.(string)); err != nil {
-			return diag.FromErr(err)
+			return diag.Errorf("couldn't set conversation purpose %s: %s", purpose.(string), err)
 		}
 	}
 
 	d.SetId(channel.ID)
 	return resourceSlackConversationRead(ctx, d, m)
+}
+
+func updateChannelMembers(d *schema.ResourceData, client *slack.Client, channelID string) error {
+	members := d.Get("permanent_members").(*schema.Set)
+	fmt.Printf("[DEBUG] updating members: %d\n", members.Len())
+
+	if members.Len() != 0 {
+		userIds := make([]string, len(members.List()))
+		for i, v := range members.List() {
+			userIds[i] = v.(string)
+		}
+		fmt.Printf("[DEBUG] updating members %s\n", userIds)
+
+		if _, err := client.InviteUsersToConversation(channelID, userIds...); err != nil {
+			if err.Error() != "already_in_channel" {
+				return fmt.Errorf("couldn't invite users to conversation: %s", err)
+			}
+		}
+	}
+	return nil
 }
 
 func resourceSlackConversationRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
@@ -134,20 +150,20 @@ func resourceSlackConversationUpdate(ctx context.Context, d *schema.ResourceData
 	id := d.Id()
 
 	if _, err := client.RenameConversationContext(ctx, id, d.Get("name").(string)); err != nil {
-		return diag.FromErr(err)
+		return diag.Errorf("couldn't rename conversation: %s", err)
 	}
 
 	if d.HasChange("topic") {
 		topic := d.Get("topic")
 		if _, err := client.SetTopicOfConversationContext(ctx, id, topic.(string)); err != nil {
-			return diag.FromErr(err)
+			return diag.Errorf("couldn't set conversation topic %s: %s", topic.(string), err)
 		}
 	}
 
 	if d.HasChange("purpose") {
 		purpose := d.Get("purpose")
 		if _, err := client.SetPurposeOfConversationContext(ctx, id, purpose.(string)); err != nil {
-			return diag.FromErr(err)
+			return diag.Errorf("couldn't set conversation purpose %s: %s", purpose.(string), err)
 		}
 	}
 
@@ -161,9 +177,16 @@ func resourceSlackConversationUpdate(ctx context.Context, d *schema.ResourceData
 		} else {
 			if err := client.UnArchiveConversationContext(ctx, id); err != nil {
 				if err.Error() != "not_archived" {
-					return diag.FromErr(err)
+					return diag.Errorf("couldn't archive conversation %s: %s", id, err)
 				}
 			}
+		}
+	}
+
+	if d.HasChange("permanent_members") {
+		err := updateChannelMembers(d, client, id)
+		if err != nil {
+			return diag.FromErr(err)
 		}
 	}
 
@@ -173,7 +196,7 @@ func resourceSlackConversationUpdate(ctx context.Context, d *schema.ResourceData
 func archiveConversationWithContext(ctx context.Context, client *slack.Client, id string) error {
 	if err := client.ArchiveConversationContext(ctx, id); err != nil {
 		if err.Error() != "already_archived" {
-			return err
+			return fmt.Errorf("couldn't archive conversation %s: %s", id, err)
 		}
 	}
 	return nil
@@ -184,7 +207,8 @@ func resourceSlackConversationDelete(ctx context.Context, d *schema.ResourceData
 	client := m.(*slack.Client)
 
 	id := d.Id()
-	if err := client.ArchiveConversationContext(ctx, id); err != nil {
+	err := archiveConversationWithContext(ctx, client, id)
+	if err != nil {
 		return diag.FromErr(err)
 	}
 
