@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/slack-go/slack"
+	"github.com/stretchr/testify/require"
 	"sort"
 	"strconv"
 	"strings"
@@ -24,9 +25,8 @@ func TestAccSlackConversationTest(t *testing.T) {
 		name := acctest.RandomWithPrefix(namePrefix)
 		createChannel := testAccSlackConversation(name)
 
-		updateName := acctest.RandomWithPrefix(fmt.Sprintf("%s-update", namePrefix))
+		updateName := acctest.RandomWithPrefix(namePrefix)
 		updateChannel := testAccSlackConversation(updateName)
-		updateChannel.ID = createChannel.ID
 
 		testSlackConversationUpdate(t, resourceName, createChannel, updateChannel)
 	})
@@ -52,15 +52,15 @@ func TestAccSlackConversationTest(t *testing.T) {
 		testSlackConversationUpdate(t, resourceName, createChannel, updateChannel)
 	})
 
-	//t.Run("test update permanent members", func(t *testing.T) {
-	//	name := acctest.RandomWithPrefix(namePrefix)
-	//	createChannel := testAccSlackConversationWithMembers(name, []string{testUser00.id})
-	//
-	//	updateChannel := createChannel
-	//	updateChannel.Members = []string{testUser00.id, testUser01.id}
-	//
-	//	testSlackConversationUpdate(t, resourceName, createChannel, updateChannel)
-	//})
+	t.Run("test update permanent members", func(t *testing.T) {
+		name := acctest.RandomWithPrefix(namePrefix)
+		createChannel := testAccSlackConversationWithMembers(name, []string{testUser00.id})
+
+		updateChannel := createChannel
+		updateChannel.Members = []string{testUser00.id, testUser01.id}
+
+		testSlackConversationUpdate(t, resourceName, createChannel, updateChannel)
+	})
 }
 
 func testSlackConversationUpdate(t *testing.T, resourceName string, createChannel slack.Channel, updateChannel slack.Channel) {
@@ -75,7 +75,10 @@ func testSlackConversationUpdate(t *testing.T, resourceName string, createChanne
 		Steps: []resource.TestStep{
 			{
 				Config: testAccSlackConversationConfig(createChannel),
-				Check:  testCheckResourceAttrBasic(resourceName, createChannel),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckSlackChannelAttributes(t, resourceName, createChannel),
+					testCheckResourceAttrBasic(resourceName, createChannel),
+				),
 			},
 			{
 				ResourceName:            resourceName,
@@ -85,14 +88,17 @@ func testSlackConversationUpdate(t *testing.T, resourceName string, createChanne
 			},
 			{
 				Config: testAccSlackConversationConfig(updateChannel),
-				Check:  testCheckResourceAttrBasic(resourceName, updateChannel),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckSlackChannelAttributes(t, resourceName, updateChannel),
+					testCheckResourceAttrBasic(resourceName, updateChannel),
+				),
 			},
 		},
 	})
 }
 
 func testCheckResourceAttrBasic(resourceName string, channel slack.Channel) resource.TestCheckFunc {
-	members := append(channel.Members, testUserCreator.id)
+	//members := append(channel.Members, testUserCreator.id)
 	return resource.ComposeTestCheckFunc(
 		resource.TestCheckResourceAttr(resourceName, "name", channel.Name),
 		resource.TestCheckResourceAttr(resourceName, "topic", channel.Topic.Value),
@@ -105,10 +111,68 @@ func testCheckResourceAttrBasic(resourceName string, channel slack.Channel) reso
 		resource.TestCheckResourceAttr(resourceName, "is_ext_shared", fmt.Sprintf("%t", channel.IsExtShared)),
 		resource.TestCheckResourceAttr(resourceName, "is_general", fmt.Sprintf("%t", channel.IsGeneral)),
 		testCheckResourceAttrSlice(resourceName, "permanent_members", channel.Members),
-		testCheckResourceAttrSlice(resourceName, "members", members),
+	//	testCheckResourceAttrSlice(resourceName, "members", members),
 	)
 }
 
+func testCheckSlackChannelAttributes(t *testing.T, resourceName string, expectedChannel slack.Channel) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return fmt.Errorf("not found: %s", resourceName)
+		}
+
+		c := testAccProvider.Meta().(*slack.Client)
+		primary := rs.Primary
+		channel, err := c.GetConversationInfo(primary.ID, false)
+		if err != nil {
+			return fmt.Errorf("couldn't get conversation info for %s: %s", primary.ID, err)
+		}
+
+		require.Equal(t, primary.Attributes["name"], channel.Name, "channel name does not match")
+		require.Equal(t, primary.Attributes["topic"], channel.Topic.Value, "channel topic does not match")
+		require.Equal(t, primary.Attributes["purpose"], channel.Purpose.Value, "channel purpose does not match")
+		require.Equal(t, primary.Attributes["creator"], channel.Creator, "channel creator does not match")
+		require.Equal(t, primary.Attributes["is_private"], fmt.Sprintf("%t", channel.IsPrivate), "channel is_private does not match")
+		require.Equal(t, primary.Attributes["is_archived"], fmt.Sprintf("%t", channel.IsArchived), "channel is_archived does not match")
+		require.Equal(t, primary.Attributes["is_shared"], fmt.Sprintf("%t", channel.IsShared), "channel is_shared does not match")
+		require.Equal(t, primary.Attributes["is_org_shared"], fmt.Sprintf("%t", channel.IsOrgShared), "channel is_org_shared does not match")
+		require.Equal(t, primary.Attributes["is_ext_shared"], fmt.Sprintf("%t", channel.IsExtShared), "channel is_ext_shared does not match")
+		require.Equal(t, primary.Attributes["is_general"], fmt.Sprintf("%t", channel.IsGeneral), "channel is_general does not match")
+
+		channelUsers, _, err := c.GetUsersInConversationContext(context.Background(), &slack.GetUsersInConversationParameters{
+			ChannelID: channel.ID,
+		})
+		if err != nil {
+			return fmt.Errorf("couldn't get channelUsers in conversation for %s: %s", channel.ID, err)
+		}
+		definedMembers := expectedChannel.Members
+		assertUsersInStateAreInTheChannel(t, primary, definedMembers, channelUsers)
+
+		return nil
+	}
+}
+
+func assertUsersInStateAreInTheChannel(t *testing.T, primary *terraform.InstanceState, definedMembers []string, users []string) {
+	permanentUsersLength, _ := strconv.Atoi(primary.Attributes["permanent_members.#"])
+
+	require.Equal(t, len(definedMembers), permanentUsersLength, "defined members length should match state")
+	for i := 0; i < permanentUsersLength; i++ {
+		user := primary.Attributes[fmt.Sprintf("permanent_members.%d", i)]
+		require.True(t, contains(users, user), "user should be in the channel")
+		require.True(t, contains(definedMembers, user), "member in state should be defined in the resource")
+	}
+}
+
+func contains(s []string, e string) bool {
+	var found bool
+	for _, x := range s {
+		if x == e {
+			return true
+		}
+	}
+	return found
+}
 func testCheckResourceAttrSlice(resourceName string, key string, a []string) resource.TestCheckFunc {
 	tests := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(resourceName, fmt.Sprintf("%s.#", key), strconv.Itoa(len(a))),
