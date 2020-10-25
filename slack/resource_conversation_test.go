@@ -98,7 +98,7 @@ func testSlackConversationUpdate(t *testing.T, resourceName string, createChanne
 }
 
 func testCheckResourceAttrBasic(resourceName string, channel slack.Channel) resource.TestCheckFunc {
-	//members := append(channel.Members, testUserCreator.id)
+//	members := append(channel.Members, testUserCreator.id)
 	return resource.ComposeTestCheckFunc(
 		resource.TestCheckResourceAttr(resourceName, "name", channel.Name),
 		resource.TestCheckResourceAttr(resourceName, "topic", channel.Topic.Value),
@@ -111,7 +111,7 @@ func testCheckResourceAttrBasic(resourceName string, channel slack.Channel) reso
 		resource.TestCheckResourceAttr(resourceName, "is_ext_shared", fmt.Sprintf("%t", channel.IsExtShared)),
 		resource.TestCheckResourceAttr(resourceName, "is_general", fmt.Sprintf("%t", channel.IsGeneral)),
 		testCheckResourceAttrSlice(resourceName, "permanent_members", channel.Members),
-	//	testCheckResourceAttrSlice(resourceName, "members", members),
+//		testCheckResourceAttrSlice(resourceName, "members", members),
 	)
 }
 
@@ -144,7 +144,7 @@ func testCheckSlackChannelAttributes(t *testing.T, resourceName string, expected
 			ChannelID: channel.ID,
 		})
 		if err != nil {
-			return fmt.Errorf("couldn't get channelUsers in conversation for %s: %s", channel.ID, err)
+			return fmt.Errorf("couldn't get users in conversation for %s: %s", channel.ID, err)
 		}
 		definedMembers := expectedChannel.Members
 		assertUsersInStateAreInTheChannel(t, primary, definedMembers, channelUsers)
