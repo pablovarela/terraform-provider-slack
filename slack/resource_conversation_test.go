@@ -21,7 +21,7 @@ func TestAccSlackConversationTest(t *testing.T) {
 	resourceName := "slack_conversation.test"
 	namePrefix := "test-acc-slack-conversation-test"
 
-	t.Run("test update name, topic and purpose", func(t *testing.T) {
+	t.Run("update name, topic and purpose", func(t *testing.T) {
 		name := acctest.RandomWithPrefix(namePrefix)
 		createChannel := testAccSlackConversation(name)
 
@@ -31,7 +31,7 @@ func TestAccSlackConversationTest(t *testing.T) {
 		testSlackConversationUpdate(t, resourceName, createChannel, updateChannel)
 	})
 
-	t.Run("test archive channel", func(t *testing.T) {
+	t.Run("archive channel", func(t *testing.T) {
 		name := acctest.RandomWithPrefix(namePrefix)
 		createChannel := testAccSlackConversationWithMembers(name, []string{testUser00.id})
 
@@ -41,7 +41,7 @@ func TestAccSlackConversationTest(t *testing.T) {
 		testSlackConversationUpdate(t, resourceName, createChannel, updateChannel)
 	})
 
-	t.Run("test unarchive channel", func(t *testing.T) {
+	t.Run("unarchive channel", func(t *testing.T) {
 		name := acctest.RandomWithPrefix(namePrefix)
 		createChannel := testAccSlackConversationWithMembers(name, []string{testUser00.id})
 		createChannel.IsArchived = true
@@ -52,7 +52,7 @@ func TestAccSlackConversationTest(t *testing.T) {
 		testSlackConversationUpdate(t, resourceName, createChannel, updateChannel)
 	})
 
-	t.Run("test update permanent members", func(t *testing.T) {
+	t.Run("update permanent members", func(t *testing.T) {
 		name := acctest.RandomWithPrefix(namePrefix)
 		createChannel := testAccSlackConversationWithMembers(name, []string{testUser00.id})
 
