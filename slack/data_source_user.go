@@ -14,8 +14,14 @@ func dataSourceUser() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:         schema.TypeString,
+				Optional:     true,
+				ExactlyOneOf: []string{"name", "email"},
+			},
+			"email": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ExactlyOneOf: []string{"name", "email"},
 			},
 		},
 	}
@@ -26,36 +32,59 @@ func dataSourceUserRead(ctx context.Context, d *schema.ResourceData, m interface
 
 	client := m.(*slack.Client)
 
-	users, err := client.GetUsersContext(ctx)
-	if err != nil {
-		return diag.Errorf("couldn't get workspace users: %s", err)
-	}
-
-	var matchingUsers []slack.User
-	for _, user := range users {
-		if user.Name == d.Get("name") {
-			matchingUsers = append(matchingUsers, user)
+	var user *slack.User
+	if name, ok := d.GetOk("name"); ok {
+		u, err := searchByName(ctx, name.(string), client)
+		if err != nil {
+			return diag.FromErr(err)
 		}
+		user = u
 	}
 
-	if len(matchingUsers) < 1 {
+	if email, ok := d.GetOk("email"); ok {
+		u, err := client.GetUserByEmailContext(ctx, email.(string))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		user = u
+	}
+
+	if user == nil {
 		return diag.Errorf("your query returned no results. Please change your search criteria and try again")
 	}
-
-	if len(matchingUsers) > 1 {
-		return diag.Errorf("your query returned more than one result. Please try a more specific search criteria")
-	}
-
-	user := matchingUsers[0]
 
 	d.SetId(user.ID)
 	if err := d.Set("name", user.Name); err != nil {
 		return diag.FromErr(fmt.Errorf("error setting name: %s", err))
 	}
 
-	if err := d.Set("name", user.Name); err != nil {
+	if err := d.Set("email", user.Profile.Email); err != nil {
 		return diag.Errorf("error setting name: %s", err)
 	}
 
 	return diags
+}
+
+func searchByName(ctx context.Context, name string, client *slack.Client) (*slack.User, error) {
+	users, err := client.GetUsersContext(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("couldn't get workspace users: %s", err)
+	}
+
+	var matchingUsers []slack.User
+	for _, user := range users {
+		if user.Name == name {
+			matchingUsers = append(matchingUsers, user)
+		}
+	}
+
+	if len(matchingUsers) < 1 {
+		return nil, fmt.Errorf("your query returned no results. Please change your search criteria and try again")
+	}
+
+	if len(matchingUsers) > 1 {
+		return nil, fmt.Errorf("your query returned more than one result. Please try a more specific search criteria")
+	}
+
+	return &matchingUsers[0], nil
 }

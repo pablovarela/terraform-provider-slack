@@ -11,8 +11,12 @@ resources.
 ## Example Usage
 
 ```hcl
-data slack_user test {
+data slack_user by_name {
   name = "my-user"
+}
+
+data slack_user by_email {
+  email = "my-user@example.com"
 }
 ```
 
@@ -20,7 +24,10 @@ data slack_user test {
 
 The following arguments are supported:
 
-* `name` - (Required) The name of the user
+* `name` - (Optional) The name of the user
+* `email` - (Optional) The email of the user
+
+The data source expects exactly one of these fields, you can't set both.
 
 ## Attribute Reference
 

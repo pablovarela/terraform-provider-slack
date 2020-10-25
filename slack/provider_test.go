@@ -7,24 +7,28 @@ import (
 )
 
 type testUser struct {
-	id   string
-	name string
+	id    string
+	name  string
+	email string
 }
 
 var (
 	testUserCreator = testUser{
-		id:   "U01D6L97N0M",
-		name: "contact",
+		id:    "U01D6L97N0M",
+		name:  "contact",
+		email: "contact@pablovarela.co.uk",
 	}
 
 	testUser00 = testUser{
-		id:   "U01D31S1GUE",
-		name: "contact_test-user-ter",
+		id:    "U01D31S1GUE",
+		name:  "contact_test-user-ter",
+		email: "contact+test-user-terraform-provider-slack-00@pablovarela.co.uk",
 	}
 
 	testUser01 = testUser{
-		id:   "U01DZK10L1W",
-		name: "contact_test-user-206",
+		id:    "U01DZK10L1W",
+		name:  "contact_test-user-206",
+		email: "contact+test-user-terraform-provider-slack-01@pablovarela.co.uk",
 	}
 )
 
