@@ -3,7 +3,8 @@ linters:
     - goimports
     - golint
     - gomnd
-    - gofumpt
+    - gofmt
     - dupl
     - misspell
     - goconst
+    - whitespace
