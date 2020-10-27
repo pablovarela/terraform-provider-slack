@@ -90,7 +90,7 @@ func resourceSlackConversationCreate(ctx context.Context, d *schema.ResourceData
 		return diag.Errorf("could create conversation %s: %s", name, err)
 	}
 
-	err = updateChannelMembers(d, client, channel.ID)
+	err = updateChannelMembers(ctx, d, client, channel.ID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -120,14 +120,21 @@ func resourceSlackConversationCreate(ctx context.Context, d *schema.ResourceData
 	return resourceSlackConversationRead(ctx, d, m)
 }
 
-func updateChannelMembers(d *schema.ResourceData, client *slack.Client, channelID string) error {
+func updateChannelMembers(ctx context.Context, d *schema.ResourceData, client *slack.Client, channelID string) error {
 	members := d.Get("permanent_members").(*schema.Set)
+
 	if members.Len() != 0 {
 		userIds := schemaSetToSlice(members)
-
-		if _, err := client.InviteUsersToConversation(channelID, userIds...); err != nil {
-			if err.Error() != "already_in_channel" {
-				return fmt.Errorf("couldn't invite users to conversation: %s", err)
+		channel, err := client.GetConversationInfoContext(ctx, channelID, false)
+		if err != nil {
+			return fmt.Errorf("could not retrieve conversation info for ID %s: %w", channelID, err)
+		}
+		userIds = remove(userIds, channel.Creator)
+		if len(userIds) > 0 {
+			if _, err := client.InviteUsersToConversation(channelID, userIds...); err != nil {
+				if err.Error() != "already_in_channel" {
+					return fmt.Errorf("couldn't invite users to conversation: %w", err)
+				}
 			}
 		}
 	}
@@ -182,7 +189,7 @@ func resourceSlackConversationUpdate(ctx context.Context, d *schema.ResourceData
 	}
 
 	if d.HasChange("permanent_members") {
-		err := updateChannelMembers(d, client, id)
+		err := updateChannelMembers(ctx, d, client, id)
 		if err != nil {
 			return diag.FromErr(err)
 		}
