@@ -2,10 +2,11 @@ package slack
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/slack-go/slack"
 	"os"
 	"testing"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/slack-go/slack"
 )
 
 var slackClient *slack.Client

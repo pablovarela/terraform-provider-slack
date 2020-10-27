@@ -3,6 +3,12 @@ package slack
 import (
 	"context"
 	"fmt"
+	"log"
+	"sort"
+	"strconv"
+	"strings"
+	"testing"
+
 	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -10,11 +16,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/slack-go/slack"
 	"github.com/stretchr/testify/require"
-	"log"
-	"sort"
-	"strconv"
-	"strings"
-	"testing"
 )
 
 const (
@@ -211,6 +212,7 @@ func contains(s []string, e string) bool {
 	}
 	return found
 }
+
 func testCheckResourceAttrSlice(resourceName string, key string, a []string) resource.TestCheckFunc {
 	tests := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(resourceName, fmt.Sprintf("%s.#", key), strconv.Itoa(len(a))),
