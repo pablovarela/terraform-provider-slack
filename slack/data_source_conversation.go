@@ -2,6 +2,7 @@ package slack
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -68,5 +69,17 @@ func dataSourceConversation() *schema.Resource {
 func dataSourceSlackConversationRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*slack.Client)
 	channelID := d.Get("channel_id").(string)
-	return readChannelInfo(ctx, d, client, channelID)
+
+	channel, err := client.GetConversationInfoContext(ctx, channelID, false)
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("couldn't get conversation info for %s: %w", channelID, err))
+	}
+
+	users, _, err := client.GetUsersInConversationContext(ctx, &slack.GetUsersInConversationParameters{
+		ChannelID: channel.ID,
+	})
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("couldn't get users in conversation for %s: %w", channel.ID, err))
+	}
+	return updateChannelData(d, channel, users)
 }

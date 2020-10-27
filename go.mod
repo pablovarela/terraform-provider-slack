@@ -39,8 +39,9 @@ require (
 	github.com/stretchr/testify v1.6.1
 	github.com/zclconf/go-cty v1.7.0 // indirect
 	golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897 // indirect
-	golang.org/x/net v0.0.0-20201026091529-146b70c837a4 // indirect
-	golang.org/x/sys v0.0.0-20201027130517-9d1ec526b7bf // indirect
-	golang.org/x/tools v0.0.0-20201026223136-e84cfc6dd5ca // indirect
+	golang.org/x/net v0.0.0-20201027133719-8eef5233e2a1 // indirect
+	golang.org/x/sys v0.0.0-20201027140754-0fcbb8f4928c // indirect
+	golang.org/x/text v0.3.4 // indirect
+	golang.org/x/tools v0.0.0-20201027180023-8dabb740183d // indirect
 	gopkg.in/ini.v1 v1.62.0 // indirect
 )

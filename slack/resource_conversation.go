@@ -144,7 +144,27 @@ func updateChannelMembers(ctx context.Context, d *schema.ResourceData, client *s
 func resourceSlackConversationRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*slack.Client)
 	id := d.Id()
-	return readChannelInfo(ctx, d, client, id)
+	var diags diag.Diagnostics
+	channel, err := client.GetConversationInfoContext(ctx, id, false)
+	if err != nil {
+		if err.Error() == "channel_not_found" {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Warning,
+				Summary:  fmt.Sprintf("channel with ID %s not found, removing from state", id),
+			})
+			d.SetId("")
+			return diags
+		}
+		return diag.FromErr(fmt.Errorf("couldn't get conversation info for %s: %w", id, err))
+	}
+
+	users, _, err := client.GetUsersInConversationContext(ctx, &slack.GetUsersInConversationParameters{
+		ChannelID: channel.ID,
+	})
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("couldn't get users in conversation for %s: %w", channel.ID, err))
+	}
+	return updateChannelData(d, channel, users)
 }
 
 func resourceSlackConversationUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
@@ -205,34 +225,13 @@ func resourceSlackConversationDelete(ctx context.Context, d *schema.ResourceData
 	id := d.Id()
 	err := archiveConversationWithContext(ctx, client, id)
 	if err != nil {
+		if err.Error() == "channel_not_found" {
+			return diags
+		}
 		return diag.FromErr(err)
 	}
 
 	return diags
-}
-
-func readChannelInfo(ctx context.Context, d *schema.ResourceData, client *slack.Client, id string) diag.Diagnostics {
-	var diags diag.Diagnostics
-	channel, err := client.GetConversationInfoContext(ctx, id, false)
-	if err != nil {
-		if err.Error() == "channel_not_found" {
-			diags = append(diags, diag.Diagnostic{
-				Severity: diag.Warning,
-				Summary:  fmt.Sprintf("channel with ID %s not found, removing from state", id),
-			})
-			d.SetId("")
-			return diags
-		}
-		return diag.Errorf("couldn't get conversation info for %s: %s", id, err)
-	}
-
-	users, _, err := client.GetUsersInConversationContext(ctx, &slack.GetUsersInConversationParameters{
-		ChannelID: channel.ID,
-	})
-	if err != nil {
-		return diag.Errorf("couldn't get users in conversation for %s: %s", channel.ID, err)
-	}
-	return updateChannelData(d, channel, users)
 }
 
 func updateChannelData(d *schema.ResourceData, channel *slack.Channel, users []string) diag.Diagnostics {
