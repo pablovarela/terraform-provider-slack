@@ -212,8 +212,17 @@ func resourceSlackConversationDelete(ctx context.Context, d *schema.ResourceData
 }
 
 func readChannelInfo(ctx context.Context, d *schema.ResourceData, client *slack.Client, id string) diag.Diagnostics {
+	var diags diag.Diagnostics
 	channel, err := client.GetConversationInfoContext(ctx, id, false)
 	if err != nil {
+		if err.Error() == "channel_not_found" {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Warning,
+				Summary:  fmt.Sprintf("channel with ID %s not found, removing from state", id),
+			})
+			d.SetId("")
+			return diags
+		}
 		return diag.Errorf("couldn't get conversation info for %s: %s", id, err)
 	}
 
