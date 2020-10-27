@@ -1,9 +1,10 @@
 package slack
 
 import (
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"os"
 	"testing"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 type testUser struct {
@@ -32,14 +33,16 @@ var (
 	}
 )
 
-var testAccProvider *schema.Provider
-var testAccProviderFactories func(providers *[]*schema.Provider) map[string]func() (*schema.Provider, error)
+var (
+	testAccProvider          *schema.Provider
+	testAccProviderFactories func(providers *[]*schema.Provider) map[string]func() (*schema.Provider, error)
+)
 
 func init() {
 	testAccProvider = Provider()
 	testAccProviderFactories = func(providers *[]*schema.Provider) map[string]func() (*schema.Provider, error) {
-		var providerNames = []string{"slack"}
-		var factories = make(map[string]func() (*schema.Provider, error), len(providerNames))
+		providerNames := []string{"slack"}
+		factories := make(map[string]func() (*schema.Provider, error), len(providerNames))
 		for _, name := range providerNames {
 			p := testAccProvider
 			factories[name] = func() (*schema.Provider, error) {

@@ -2,13 +2,14 @@ package slack
 
 import (
 	"fmt"
+	"regexp"
+	"testing"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/slack-go/slack"
-	"regexp"
-	"testing"
 )
 
 func TestAccSlackConversationDataSource_basic(t *testing.T) {
@@ -17,7 +18,7 @@ func TestAccSlackConversationDataSource_basic(t *testing.T) {
 
 	var providers []*schema.Provider
 	name := acctest.RandomWithPrefix("test-acc-slack-conversation-test")
-	var members = []string{testUser00.id, testUser01.id}
+	members := []string{testUser00.id, testUser01.id}
 	createChannel := testAccSlackConversationWithMembers(name, members)
 
 	resource.ParallelTest(t, resource.TestCase{

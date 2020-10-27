@@ -1,0 +1,9 @@
+linters:
+  enable:
+    - goimports
+    - golint
+    - gomnd
+    - gofumpt
+    - dupl
+    - misspell
+    - goconst
