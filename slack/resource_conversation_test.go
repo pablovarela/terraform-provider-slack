@@ -69,7 +69,7 @@ func TestAccSlackConversationTest(t *testing.T) {
 		updateName := acctest.RandomWithPrefix(namePrefix)
 		updateChannel := testAccSlackConversation(updateName)
 
-		testSlackConversationUpdate(t, resourceName, createChannel, updateChannel)
+		testSlackConversationUpdate(t, resourceName, createChannel, &updateChannel)
 	})
 
 	t.Run("archive channel", func(t *testing.T) {
@@ -79,7 +79,7 @@ func TestAccSlackConversationTest(t *testing.T) {
 		updateChannel := createChannel
 		updateChannel.IsArchived = true
 
-		testSlackConversationUpdate(t, resourceName, createChannel, updateChannel)
+		testSlackConversationUpdate(t, resourceName, createChannel, &updateChannel)
 	})
 
 	t.Run("unarchive channel", func(t *testing.T) {
@@ -90,7 +90,7 @@ func TestAccSlackConversationTest(t *testing.T) {
 		updateChannel := createChannel
 		updateChannel.IsArchived = false
 
-		testSlackConversationUpdate(t, resourceName, createChannel, updateChannel)
+		testSlackConversationUpdate(t, resourceName, createChannel, &updateChannel)
 	})
 
 	t.Run("update permanent members", func(t *testing.T) {
@@ -100,12 +100,55 @@ func TestAccSlackConversationTest(t *testing.T) {
 		updateChannel := createChannel
 		updateChannel.Members = []string{testUser00.id, testUser01.id}
 
-		testSlackConversationUpdate(t, resourceName, createChannel, updateChannel)
+		testSlackConversationUpdate(t, resourceName, createChannel, &updateChannel)
+	})
+
+	t.Run("invite only the creator to the channel", func(t *testing.T) {
+		name := acctest.RandomWithPrefix(namePrefix)
+		users := []string{testUserCreator.id}
+		createChannel := testAccSlackConversationWithMembers(name, users)
+
+		testSlackConversationUpdate(t, resourceName, createChannel, nil)
+	})
+
+	t.Run("invite creator and other users to the channel", func(t *testing.T) {
+		name := acctest.RandomWithPrefix(namePrefix)
+		users := []string{testUserCreator.id, testUser00.id, testUser01.id}
+		createChannel := testAccSlackConversationWithMembers(name, users)
+
+		testSlackConversationUpdate(t, resourceName, createChannel, nil)
 	})
 }
 
-func testSlackConversationUpdate(t *testing.T, resourceName string, createChannel slack.Channel, updateChannel slack.Channel) {
+func testSlackConversationUpdate(t *testing.T, resourceName string, createChannel slack.Channel, updateChannel *slack.Channel) {
 	var providers []*schema.Provider
+	steps := []resource.TestStep{
+		{
+			Config: testAccSlackConversationConfig(createChannel),
+			Check: resource.ComposeTestCheckFunc(
+				testCheckSlackChannelAttributes(t, resourceName, createChannel),
+				testCheckResourceAttrBasic(resourceName, createChannel),
+			),
+		},
+		{
+			ResourceName:            resourceName,
+			ImportState:             true,
+			ImportStateVerify:       true,
+			ImportStateVerifyIgnore: []string{"permanent_members"},
+		},
+	}
+
+	if updateChannel != nil {
+		steps = append(steps, resource.TestStep{
+			Config: testAccSlackConversationConfig(*updateChannel),
+			Check: resource.ComposeTestCheckFunc(
+				testCheckSlackChannelAttributes(t, resourceName, *updateChannel),
+				testCheckResourceAttrBasic(resourceName, *updateChannel),
+			),
+		},
+		)
+	}
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
@@ -113,28 +156,7 @@ func testSlackConversationUpdate(t *testing.T, resourceName string, createChanne
 		IDRefreshName:     resourceName,
 		ProviderFactories: testAccProviderFactories(&providers),
 		CheckDestroy:      testAccCheckConversationDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccSlackConversationConfig(createChannel),
-				Check: resource.ComposeTestCheckFunc(
-					testCheckSlackChannelAttributes(t, resourceName, createChannel),
-					testCheckResourceAttrBasic(resourceName, createChannel),
-				),
-			},
-			{
-				ResourceName:            resourceName,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"permanent_members"},
-			},
-			{
-				Config: testAccSlackConversationConfig(updateChannel),
-				Check: resource.ComposeTestCheckFunc(
-					testCheckSlackChannelAttributes(t, resourceName, updateChannel),
-					testCheckResourceAttrBasic(resourceName, updateChannel),
-				),
-			},
-		},
+		Steps:             steps,
 	})
 }
 
