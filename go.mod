@@ -11,7 +11,7 @@ require (
 	github.com/hashicorp/go-multierror v1.1.0
 	github.com/hashicorp/hcl/v2 v2.7.0 // indirect
 	github.com/hashicorp/terraform-json v0.6.0 // indirect
-	github.com/hashicorp/terraform-plugin-sdk/v2 v2.0.4
+	github.com/hashicorp/terraform-plugin-sdk/v2 v2.1.0
 	github.com/imdario/mergo v0.3.11 // indirect
 	github.com/mattn/go-colorable v0.1.8 // indirect
 	github.com/mitchellh/go-wordwrap v1.0.1 // indirect
