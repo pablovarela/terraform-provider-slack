@@ -16,7 +16,7 @@ require (
 	github.com/mitchellh/go-wordwrap v1.0.1 // indirect
 	github.com/mitchellh/mapstructure v1.3.3 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/slack-go/slack v0.7.2
+	github.com/slack-go/slack v0.7.3
 	github.com/stretchr/testify v1.6.1
 	github.com/zclconf/go-cty v1.7.0 // indirect
 	golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897 // indirect
