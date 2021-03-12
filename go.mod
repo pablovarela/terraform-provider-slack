@@ -6,7 +6,7 @@ require (
 	github.com/agext/levenshtein v1.2.3 // indirect
 	github.com/fatih/color v1.9.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
-	github.com/hashicorp/go-multierror v1.1.0
+	github.com/hashicorp/go-multierror v1.1.1
 	github.com/hashicorp/hcl/v2 v2.7.0 // indirect
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.4.4
 	github.com/imdario/mergo v0.3.11 // indirect
