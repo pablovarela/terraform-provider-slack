@@ -32,7 +32,7 @@ func init() {
 			}
 			c := client.(*slack.Client)
 			channels, _, err := c.GetConversations(&slack.GetConversationsParameters{
-				ExcludeArchived: "true",
+				ExcludeArchived: true,
 				Types:           []string{"public_channel", "private_channel"},
 			})
 			if err != nil {
