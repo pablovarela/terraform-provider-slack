@@ -12,7 +12,7 @@ require (
 	github.com/mattn/go-colorable v0.1.8 // indirect
 	github.com/mitchellh/go-wordwrap v1.0.1 // indirect
 	github.com/mitchellh/mapstructure v1.3.3 // indirect
-	github.com/slack-go/slack v0.9.0
+	github.com/slack-go/slack v0.9.1
 	github.com/stretchr/testify v1.7.0
 	golang.org/x/tools v0.0.0-20201027180023-8dabb740183d // indirect
 )
