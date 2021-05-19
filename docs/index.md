@@ -5,7 +5,7 @@ page_title: "Provider: Slack"
 # Slack Provider
 
 The Slack provider is used to interact with Slack resources supported by Slack.
-The provider needs to be configurred with a valid token before it can be used.
+The provider needs to be configured with a valid token before it can be used.
 
 Use the navigation to the left to read about the available resources.
 
@@ -18,7 +18,7 @@ terraform {
   required_providers {
     slack = {
       source  = "pablovarela/slack"
-      version = "~> 0.1"
+      version = "~> 1.0"
     }
   }
   required_version = ">= 0.13"

@@ -130,8 +130,25 @@ func updateChannelMembers(ctx context.Context, d *schema.ResourceData, client *s
 			return fmt.Errorf("could not retrieve conversation info for ID %s: %w", channelID, err)
 		}
 		userIds = remove(userIds, channel.Creator)
+
+		channelUsers, _, err := client.GetUsersInConversationContext(ctx, &slack.GetUsersInConversationParameters{
+			ChannelID: channel.ID,
+		})
+
+		if err != nil {
+			return fmt.Errorf("could not retrieve conversation users for ID %s: %w", channelID, err)
+		}
+
+		for _, currentMember := range channelUsers {
+			if currentMember != channel.Creator && !contains(userIds, currentMember) {
+				if err := client.KickUserFromConversationContext(ctx, channelID, currentMember); err != nil {
+					return fmt.Errorf("couldn't kick user from conversation: %w", err)
+				}
+			}
+		}
+
 		if len(userIds) > 0 {
-			if _, err := client.InviteUsersToConversation(channelID, userIds...); err != nil {
+			if _, err := client.InviteUsersToConversationContext(ctx, channelID, userIds...); err != nil {
 				if err.Error() != "already_in_channel" {
 					return fmt.Errorf("couldn't invite users to conversation: %w", err)
 				}
@@ -294,4 +311,14 @@ func archiveConversationWithContext(ctx context.Context, client *slack.Client, i
 		}
 	}
 	return nil
+}
+
+func contains(s []string, e string) bool {
+	var found bool
+	for _, x := range s {
+		if x == e {
+			return true
+		}
+	}
+	return found
 }
