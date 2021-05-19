@@ -93,7 +93,7 @@ func TestAccSlackConversationTest(t *testing.T) {
 		testSlackConversationUpdate(t, resourceName, createChannel, &updateChannel)
 	})
 
-	t.Run("update permanent members", func(t *testing.T) {
+	t.Run("add permanent members", func(t *testing.T) {
 		name := acctest.RandomWithPrefix(namePrefix)
 		createChannel := testAccSlackConversationWithMembers(name, []string{testUser00.id})
 
