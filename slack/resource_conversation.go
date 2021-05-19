@@ -135,6 +135,10 @@ func updateChannelMembers(ctx context.Context, d *schema.ResourceData, client *s
 			ChannelID: channel.ID,
 		})
 
+		if err != nil {
+			return fmt.Errorf("could not retrieve conversation users for ID %s: %w", channelID, err)
+		}
+
 		for _, currentMember := range channelUsers {
 			if currentMember != channel.Creator && !contains(userIds, currentMember) {
 				if err := client.KickUserFromConversationContext(ctx, channelID, currentMember); err != nil {
