@@ -103,6 +103,16 @@ func TestAccSlackConversationTest(t *testing.T) {
 		testSlackConversationUpdate(t, resourceName, createChannel, &updateChannel)
 	})
 
+	t.Run("remove permanent members", func(t *testing.T) {
+		name := acctest.RandomWithPrefix(namePrefix)
+		createChannel := testAccSlackConversationWithMembers(name, []string{testUser00.id, testUser01.id})
+
+		updateChannel := createChannel
+		updateChannel.Members = []string{testUser00.id}
+
+		testSlackConversationUpdate(t, resourceName, createChannel, &updateChannel)
+	})
+
 	t.Run("invite only the creator to the channel", func(t *testing.T) {
 		name := acctest.RandomWithPrefix(namePrefix)
 		users := []string{testUserCreator.id}
@@ -216,23 +226,19 @@ func testCheckSlackChannelAttributes(t *testing.T, resourceName string, expected
 
 func assertUsersInStateAreInTheChannel(t *testing.T, primary *terraform.InstanceState, definedMembers []string, users []string) {
 	permanentUsersLength, _ := strconv.Atoi(primary.Attributes["permanent_members.#"])
-
 	require.Equal(t, len(definedMembers), permanentUsersLength, "defined members length should match state")
+
+	definedMembersPlusCreator := definedMembers
+	if !contains(definedMembers, testUserCreator.id) {
+		definedMembersPlusCreator = append(definedMembers, testUserCreator.id)
+	}
+	require.Equal(t, len(definedMembersPlusCreator), len(users), "defined members length should match users in channel")
+
 	for i := 0; i < permanentUsersLength; i++ {
 		user := primary.Attributes[fmt.Sprintf("permanent_members.%d", i)]
 		require.True(t, contains(users, user), "user should be in the channel")
 		require.True(t, contains(definedMembers, user), "member in state should be defined in the resource")
 	}
-}
-
-func contains(s []string, e string) bool {
-	var found bool
-	for _, x := range s {
-		if x == e {
-			return true
-		}
-	}
-	return found
 }
 
 func testCheckResourceAttrSlice(resourceName string, key string, a []string) resource.TestCheckFunc {
