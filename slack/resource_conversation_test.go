@@ -19,7 +19,7 @@ import (
 )
 
 const (
-	namePrefix = "test-acc-slack-conversation-test"
+	conversationNamePrefix = "test-acc-slack-conversation-test"
 )
 
 func init() {
@@ -40,7 +40,7 @@ func init() {
 			}
 			var sweeperErrs *multierror.Error
 			for _, channel := range channels {
-				if strings.HasPrefix(channel.Name, namePrefix) {
+				if strings.HasPrefix(channel.Name, conversationNamePrefix) {
 					err := c.ArchiveConversationContext(context.Background(), channel.ID)
 					if err != nil {
 						if err.Error() != "already_archived" {
@@ -63,17 +63,17 @@ func TestAccSlackConversationTest(t *testing.T) {
 	resourceName := "slack_conversation.test"
 
 	t.Run("update name, topic and purpose", func(t *testing.T) {
-		name := acctest.RandomWithPrefix(namePrefix)
+		name := acctest.RandomWithPrefix(conversationNamePrefix)
 		createChannel := testAccSlackConversation(name)
 
-		updateName := acctest.RandomWithPrefix(namePrefix)
+		updateName := acctest.RandomWithPrefix(conversationNamePrefix)
 		updateChannel := testAccSlackConversation(updateName)
 
 		testSlackConversationUpdate(t, resourceName, createChannel, &updateChannel)
 	})
 
 	t.Run("archive channel", func(t *testing.T) {
-		name := acctest.RandomWithPrefix(namePrefix)
+		name := acctest.RandomWithPrefix(conversationNamePrefix)
 		createChannel := testAccSlackConversationWithMembers(name, []string{testUser00.id})
 
 		updateChannel := createChannel
@@ -83,7 +83,7 @@ func TestAccSlackConversationTest(t *testing.T) {
 	})
 
 	t.Run("unarchive channel", func(t *testing.T) {
-		name := acctest.RandomWithPrefix(namePrefix)
+		name := acctest.RandomWithPrefix(conversationNamePrefix)
 		createChannel := testAccSlackConversationWithMembers(name, []string{testUser00.id})
 		createChannel.IsArchived = true
 
@@ -94,7 +94,7 @@ func TestAccSlackConversationTest(t *testing.T) {
 	})
 
 	t.Run("add permanent members", func(t *testing.T) {
-		name := acctest.RandomWithPrefix(namePrefix)
+		name := acctest.RandomWithPrefix(conversationNamePrefix)
 		createChannel := testAccSlackConversationWithMembers(name, []string{testUser00.id})
 
 		updateChannel := createChannel
@@ -104,7 +104,7 @@ func TestAccSlackConversationTest(t *testing.T) {
 	})
 
 	t.Run("remove permanent members", func(t *testing.T) {
-		name := acctest.RandomWithPrefix(namePrefix)
+		name := acctest.RandomWithPrefix(conversationNamePrefix)
 		createChannel := testAccSlackConversationWithMembers(name, []string{testUser00.id, testUser01.id})
 
 		updateChannel := createChannel
@@ -114,7 +114,7 @@ func TestAccSlackConversationTest(t *testing.T) {
 	})
 
 	t.Run("invite only the creator to the channel", func(t *testing.T) {
-		name := acctest.RandomWithPrefix(namePrefix)
+		name := acctest.RandomWithPrefix(conversationNamePrefix)
 		users := []string{testUserCreator.id}
 		createChannel := testAccSlackConversationWithMembers(name, users)
 
@@ -122,7 +122,7 @@ func TestAccSlackConversationTest(t *testing.T) {
 	})
 
 	t.Run("invite creator and other users to the channel", func(t *testing.T) {
-		name := acctest.RandomWithPrefix(namePrefix)
+		name := acctest.RandomWithPrefix(conversationNamePrefix)
 		users := []string{testUserCreator.id, testUser00.id, testUser01.id}
 		createChannel := testAccSlackConversationWithMembers(name, users)
 

@@ -87,7 +87,7 @@ func resourceSlackConversationCreate(ctx context.Context, d *schema.ResourceData
 
 	channel, err := client.CreateConversationContext(ctx, name, isPrivate)
 	if err != nil {
-		return diag.Errorf("could create conversation %s: %s", name, err)
+		return diag.Errorf("could not create conversation %s: %s", name, err)
 	}
 
 	err = updateChannelMembers(ctx, d, client, channel.ID)
@@ -123,38 +123,37 @@ func resourceSlackConversationCreate(ctx context.Context, d *schema.ResourceData
 func updateChannelMembers(ctx context.Context, d *schema.ResourceData, client *slack.Client, channelID string) error {
 	members := d.Get("permanent_members").(*schema.Set)
 
-	if members.Len() != 0 {
-		userIds := schemaSetToSlice(members)
-		channel, err := client.GetConversationInfoContext(ctx, channelID, false)
-		if err != nil {
-			return fmt.Errorf("could not retrieve conversation info for ID %s: %w", channelID, err)
-		}
-		userIds = remove(userIds, channel.Creator)
+	userIds := schemaSetToSlice(members)
+	channel, err := client.GetConversationInfoContext(ctx, channelID, false)
+	if err != nil {
+		return fmt.Errorf("could not retrieve conversation info for ID %s: %w", channelID, err)
+	}
+	userIds = remove(userIds, channel.Creator)
 
-		channelUsers, _, err := client.GetUsersInConversationContext(ctx, &slack.GetUsersInConversationParameters{
-			ChannelID: channel.ID,
-		})
+	channelUsers, _, err := client.GetUsersInConversationContext(ctx, &slack.GetUsersInConversationParameters{
+		ChannelID: channel.ID,
+	})
 
-		if err != nil {
-			return fmt.Errorf("could not retrieve conversation users for ID %s: %w", channelID, err)
-		}
+	if err != nil {
+		return fmt.Errorf("could not retrieve conversation users for ID %s: %w", channelID, err)
+	}
 
-		for _, currentMember := range channelUsers {
-			if currentMember != channel.Creator && !contains(userIds, currentMember) {
-				if err := client.KickUserFromConversationContext(ctx, channelID, currentMember); err != nil {
-					return fmt.Errorf("couldn't kick user from conversation: %w", err)
-				}
-			}
-		}
-
-		if len(userIds) > 0 {
-			if _, err := client.InviteUsersToConversationContext(ctx, channelID, userIds...); err != nil {
-				if err.Error() != "already_in_channel" {
-					return fmt.Errorf("couldn't invite users to conversation: %w", err)
-				}
+	for _, currentMember := range channelUsers {
+		if currentMember != channel.Creator && !contains(userIds, currentMember) {
+			if err := client.KickUserFromConversationContext(ctx, channelID, currentMember); err != nil {
+				return fmt.Errorf("couldn't kick user from conversation: %w", err)
 			}
 		}
 	}
+
+	if len(userIds) > 0 {
+		if _, err := client.InviteUsersToConversationContext(ctx, channelID, userIds...); err != nil {
+			if err.Error() != "already_in_channel" {
+				return fmt.Errorf("couldn't invite users to conversation: %w", err)
+			}
+		}
+	}
+
 	return nil
 }
 

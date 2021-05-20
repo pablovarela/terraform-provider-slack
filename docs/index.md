@@ -29,11 +29,24 @@ provider slack {
   token = var.slack_token
 }
 
+data "slack_user" "test_user_00" {
+  name = "contact_test-user-ter"
+}
+
+# Create a User Group
+resource "slack_usergroup" "my_group" {
+  name        = "TestGroup"
+  handle      = "test"
+  description = "Test user group"
+  users       = [data.slack_user.test_user_00.id]
+}
+
 # Create a Slack channel
-resource slack_conversation test {
-  name       = "my-channel"
-  topic      = "The topic for my channel"
-  is_private = true
+resource slack_conversation "test" {
+  name              = "my-channel"
+  topic             = "The topic for my channel"
+  permanent_members = slack_usergroup.my_group.users
+  is_private        = true
 }
 ```
 
