@@ -20,9 +20,9 @@ resource "slack_usergroup" "my_group" {
 }
 ```
 
-Note that if a channel if removed from the `channels` list users are
-**not** removed from the channels. In order to keep the users in the
-groups and it the channel in sync set `permanent_users` in the channel:
+Note that if a channel is removed from the `channels` list users are
+**not** removed from the channel. In order to keep the users in the
+groups and in the channel in sync set `permanent_users` in the channel:
 
 ```hcl
 resource "slack_usergroup" "my_group" {
