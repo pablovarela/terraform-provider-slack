@@ -1,6 +1,6 @@
 # Terraform Provider for Slack
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/pablovarela/terraform-provider-slack)](https://goreportcard.com/report/github.com/pablovarela/terraform-provider-slack)<a href="https://github.com/pablovarela/terraform-provider-slack/actions?query=workflow%3ABuild">![build](https://github.com/pablovarela/terraform-provider-slack/workflows/Build/badge.svg)</a> <a href="https://github.com/pablovarela/terraform-provider-slack/actions?query=workflow%3Arelease">![release](https://github.com/pablovarela/terraform-provider-slack/workflows/release/badge.svg)</a>
+[![Go Report Card](https://goreportcard.com/badge/github.com/pablovarela/terraform-provider-slack)](https://goreportcard.com/report/github.com/pablovarela/terraform-provider-slack) <a href="https://github.com/pablovarela/terraform-provider-slack/actions?query=workflow%3ABuild">![build](https://github.com/pablovarela/terraform-provider-slack/workflows/Build/badge.svg)</a> <a href="https://github.com/pablovarela/terraform-provider-slack/actions?query=workflow%3Arelease">![release](https://github.com/pablovarela/terraform-provider-slack/workflows/release/badge.svg)</a>
 
 The Terraform Provider for Slack is a plugin for Terraform that allows the
 management of Slack resources.
