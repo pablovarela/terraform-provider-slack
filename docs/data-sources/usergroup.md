@@ -8,6 +8,9 @@ page_title: "Slack: slack_usergroup"
 Use this data source to get information about a usergroups for use in other
 resources. The data source returns enabled groups only.
 
+Requires
+[usergroups:read](https://api.slack.com/scopes/usergroups:read) scope.
+
 ## Example Usage
 
 ```hcl

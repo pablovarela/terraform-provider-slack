@@ -13,10 +13,11 @@ resource "slack_usergroup" "my_group" {
   users       = [data.slack_user.test_user_01.id, data.slack_user.test_user_00.id]
 }
 
-resource "slack_conversation" "aws_chatbot" {
-  name       = "aws-chat-bot-notifications-pablo"
-  topic      = "AWS ChatBot Notifications"
-  is_private = true
+resource "slack_conversation" "my_conversation" {
+  name            = "my-conversation"
+  topic           = "some interesting topic"
+  private_members = slack_usergroup.my_group.users
+  is_private      = true
 }
 
 data "slack_usergroup" "by_name" {
