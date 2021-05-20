@@ -76,7 +76,7 @@ func resourceSlackUserGroupCreate(ctx context.Context, d *schema.ResourceData, m
 		if err.Error() != "name_already_exists" {
 			return diag.Errorf("could not create usergroup %s: %s", name, err)
 		}
-		group, err := findUserGroupByName(ctx, name, m)
+		group, err := findUserGroupByName(ctx, name, true, m)
 		if err != nil {
 			return diag.Errorf("could not find usergroup %s: %s", name, err)
 		}
@@ -128,9 +128,9 @@ func resourceSlackUserGroupRead(ctx context.Context, d *schema.ResourceData, m i
 	return diags
 }
 
-func findUserGroupByName(ctx context.Context, name string, m interface{}) (slack.UserGroup, error) {
+func findUserGroupByName(ctx context.Context, name string, includeDisabled bool, m interface{}) (slack.UserGroup, error) {
 	client := m.(*slack.Client)
-	userGroups, err := client.GetUserGroupsContext(ctx, slack.GetUserGroupsOptionIncludeDisabled(true))
+	userGroups, err := client.GetUserGroupsContext(ctx, slack.GetUserGroupsOptionIncludeDisabled(includeDisabled), slack.GetUserGroupsOptionIncludeUsers(true))
 	if err != nil {
 		return slack.UserGroup{}, err
 	}
@@ -141,12 +141,12 @@ func findUserGroupByName(ctx context.Context, name string, m interface{}) (slack
 		}
 	}
 
-	return slack.UserGroup{}, nil
+	return slack.UserGroup{}, fmt.Errorf("could not find usergroup %s", name)
 }
 
-func findUserGroupByID(ctx context.Context, id string, m interface{}) (slack.UserGroup, error) {
+func findUserGroupByID(ctx context.Context, id string, includeDisabled bool, m interface{}) (slack.UserGroup, error) {
 	client := m.(*slack.Client)
-	userGroups, err := client.GetUserGroupsContext(ctx, slack.GetUserGroupsOptionIncludeDisabled(true), slack.GetUserGroupsOptionIncludeUsers(true))
+	userGroups, err := client.GetUserGroupsContext(ctx, slack.GetUserGroupsOptionIncludeDisabled(includeDisabled), slack.GetUserGroupsOptionIncludeUsers(true))
 	if err != nil {
 		return slack.UserGroup{}, err
 	}
@@ -157,7 +157,7 @@ func findUserGroupByID(ctx context.Context, id string, m interface{}) (slack.Use
 		}
 	}
 
-	return slack.UserGroup{}, nil
+	return slack.UserGroup{}, fmt.Errorf("could not find usergroup %s", id)
 }
 
 func resourceSlackUserGroupUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {

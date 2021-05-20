@@ -14,8 +14,15 @@ resource "slack_usergroup" "my_group" {
 }
 
 resource "slack_conversation" "aws_chatbot" {
-  name              = "aws-chat-bot-notifications-pablo"
-  topic             = "AWS ChatBot Notifications"
-  permanent_members = slack_usergroup.my_group.users
-  is_private        = true
+  name       = "aws-chat-bot-notifications-pablo"
+  topic      = "AWS ChatBot Notifications"
+  is_private = true
+}
+
+data "slack_usergroup" "by_name" {
+  name = slack_usergroup.my_group.name
+}
+
+data "slack_usergroup" "by_id" {
+  usergroup_id = slack_usergroup.my_group.id
 }

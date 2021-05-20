@@ -81,18 +81,7 @@ func TestAccSlackUserGroupTest(t *testing.T) {
 	})
 
 	t.Run("update channels", func(t *testing.T) {
-		client, err := sharedSlackClient()
-		if err != nil {
-			require.NoError(t, err, "error getting client: %s", err)
-		}
-
-		c := client.(*slack.Client)
-		channelName := acctest.RandomWithPrefix(conversationNamePrefix)
-		channel, err := c.CreateConversationContext(context.Background(), channelName, false)
-		require.NoError(t, err)
-		t.Cleanup(func() {
-			_ = c.ArchiveConversationContext(context.Background(), channel.ID)
-		})
+		channel := createTestConversation(t)
 
 		name := acctest.RandomWithPrefix(userGroupResourceNamePrefix)
 		createUserGroup := testAccSlackUserGroupWithUsers(name, []string{}, []string{})
@@ -102,6 +91,22 @@ func TestAccSlackUserGroupTest(t *testing.T) {
 
 		testSlackUserGroupUpdate(t, resourceName, createUserGroup, &updateUserGroup)
 	})
+}
+
+func createTestConversation(t *testing.T) *slack.Channel {
+	client, err := sharedSlackClient()
+	if err != nil {
+		require.NoError(t, err, "error getting client: %s", err)
+	}
+
+	c := client.(*slack.Client)
+	channelName := acctest.RandomWithPrefix(conversationNamePrefix)
+	channel, err := c.CreateConversationContext(context.Background(), channelName, false)
+	require.NoError(t, err)
+	t.Cleanup(func() {
+		_ = c.ArchiveConversationContext(context.Background(), channel.ID)
+	})
+	return channel
 }
 
 func testSlackUserGroupUpdate(t *testing.T, resourceName string, createChannel slack.UserGroup, updateChannel *slack.UserGroup) {
@@ -162,7 +167,7 @@ func testCheckSlackUserGroupAttributes(t *testing.T, resourceName string, expect
 		}
 
 		primary := rs.Primary
-		group, err := findUserGroupByID(context.Background(), primary.ID, testAccProvider.Meta())
+		group, err := findUserGroupByID(context.Background(), primary.ID, false, testAccProvider.Meta())
 		if err != nil {
 			return fmt.Errorf("couldn't get conversation info for %s: %s", primary.ID, err)
 		}
