@@ -110,14 +110,14 @@ func resourceSlackUserGroupRead(ctx context.Context, d *schema.ResourceData, m i
 	client := m.(*slack.Client)
 	id := d.Id()
 	var diags diag.Diagnostics
-	userGroups, err := client.GetUserGroupsContext(ctx)
+	userGroups, err := client.GetUserGroupsContext(ctx, slack.GetUserGroupsOptionIncludeUsers(true))
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("couldn't get usergroups: %w", err))
 	}
 
 	for _, userGroup := range userGroups {
 		if userGroup.ID == id {
-			return updateUserGroupData(d, userGroup, []string{})
+			return updateUserGroupData(d, userGroup)
 		}
 	}
 	diags = append(diags, diag.Diagnostic{
@@ -137,6 +137,22 @@ func findUserGroupByName(ctx context.Context, name string, m interface{}) (slack
 
 	for _, userGroup := range userGroups {
 		if userGroup.Name == name {
+			return userGroup, nil
+		}
+	}
+
+	return slack.UserGroup{}, nil
+}
+
+func findUserGroupByID(ctx context.Context, id string, m interface{}) (slack.UserGroup, error) {
+	client := m.(*slack.Client)
+	userGroups, err := client.GetUserGroupsContext(ctx, slack.GetUserGroupsOptionIncludeDisabled(true), slack.GetUserGroupsOptionIncludeUsers(true))
+	if err != nil {
+		return slack.UserGroup{}, err
+	}
+
+	for _, userGroup := range userGroups {
+		if userGroup.ID == id {
 			return userGroup, nil
 		}
 	}
@@ -191,7 +207,7 @@ func resourceSlackUserGroupDelete(ctx context.Context, d *schema.ResourceData, m
 	return diags
 }
 
-func updateUserGroupData(d *schema.ResourceData, userGroup slack.UserGroup, users []string) diag.Diagnostics {
+func updateUserGroupData(d *schema.ResourceData, userGroup slack.UserGroup) diag.Diagnostics {
 	if userGroup.ID == "" {
 		return diag.Errorf("error setting id: returned usergroup does not have an id")
 	}
