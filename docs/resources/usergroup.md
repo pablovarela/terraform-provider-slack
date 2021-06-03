@@ -75,3 +75,11 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
 - `id` - The usergroup ID
+
+## Import
+
+`slack_usergroup` can be imported using the ID of the group, e.g.
+
+```shell
+terraform import slack_usergroup.my_group S022GE79E9G
+```
