@@ -68,3 +68,11 @@ with a remote organization.
 Grid workspaces within the same organization.
 - `is_general` - will be true if this channel is the "general" channel that includes
 all regular team members.
+
+## Import
+
+`slack_conversation` can be imported using the ID of the conversation/channel, e.g.
+
+```shell
+$ terraform import slack_conversation.my_conversation C023X7QTFHQ
+```
