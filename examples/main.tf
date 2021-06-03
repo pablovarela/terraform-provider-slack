@@ -16,7 +16,7 @@ resource "slack_usergroup" "my_group" {
 resource "slack_conversation" "my_conversation" {
   name            = "my-conversation"
   topic           = "some interesting topic"
-  private_members = slack_usergroup.my_group.users
+  permanent_members = slack_usergroup.my_group.users
   is_private      = true
 }
 
