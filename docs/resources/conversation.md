@@ -74,5 +74,5 @@ all regular team members.
 `slack_conversation` can be imported using the ID of the conversation/channel, e.g.
 
 ```shell
-$ terraform import slack_conversation.my_conversation C023X7QTFHQ
+terraform import slack_conversation.my_conversation C023X7QTFHQ
 ```
