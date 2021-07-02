@@ -50,7 +50,7 @@ func TestAccSlackUserGroupDataSource_basic(t *testing.T) {
 			Steps: []resource.TestStep{
 				{
 					Config:      testAccCheckSlackUserGroupDataSourceConfigMissingFields,
-					ExpectError: regexp.MustCompile("ExactlyOne"),
+					ExpectError: regexp.MustCompile(`Invalid combination of arguments`),
 				},
 			},
 		})
@@ -67,7 +67,7 @@ func TestAccSlackUserGroupDataSource_basic(t *testing.T) {
 			Steps: []resource.TestStep{
 				{
 					Config:      testAccCheckSlackUserGroupDataSourceConfigByNameAndID(createUserGroup),
-					ExpectError: regexp.MustCompile("ExactlyOne"),
+					ExpectError: regexp.MustCompile(`Invalid combination of arguments`),
 				},
 			},
 		})

@@ -49,7 +49,7 @@ func TestAccSlackUserDataSource_basic(t *testing.T) {
 			Steps: []resource.TestStep{
 				{
 					Config:      testAccCheckSlackUserDataSourceConfigMissingFields,
-					ExpectError: regexp.MustCompile("ExactlyOne"),
+					ExpectError: regexp.MustCompile(`Invalid combination of arguments`),
 				},
 			},
 		})
@@ -62,7 +62,7 @@ func TestAccSlackUserDataSource_basic(t *testing.T) {
 			Steps: []resource.TestStep{
 				{
 					Config:      testAccCheckSlackUserDataSourceConfigExistentByNameAndEmail,
-					ExpectError: regexp.MustCompile("ExactlyOne"),
+					ExpectError: regexp.MustCompile(`Invalid combination of arguments`),
 				},
 			},
 		})
