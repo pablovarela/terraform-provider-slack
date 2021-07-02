@@ -130,7 +130,7 @@ func updateChannelMembers(ctx context.Context, d *schema.ResourceData, client *s
 	}
 
 	apiUserInfo, err := client.AuthTest()
-  
+
 	if err != nil {
 		return fmt.Errorf("Error authenticating with slack %w", err)
 	}
