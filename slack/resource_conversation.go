@@ -137,20 +137,8 @@ func updateChannelMembers(ctx context.Context, d *schema.ResourceData, client *s
 	userIds = remove(userIds, apiUserInfo.UserID)
 	userIds = remove(userIds, channel.Creator)
 
-	channelUsers, _, err := client.GetUsersInConversationContext(ctx, &slack.GetUsersInConversationParameters{
-		ChannelID: channel.ID,
-	})
-
 	if err != nil {
 		return fmt.Errorf("could not retrieve conversation users for ID %s: %w", channelID, err)
-	}
-
-	for _, currentMember := range channelUsers {
-		if currentMember != channel.Creator && currentMember != apiUserInfo.UserID && !contains(userIds, currentMember) {
-			if err := client.KickUserFromConversationContext(ctx, channelID, currentMember); err != nil {
-				return fmt.Errorf("couldn't kick user from conversation: %w", err)
-			}
-		}
 	}
 
 	if len(userIds) > 0 {
