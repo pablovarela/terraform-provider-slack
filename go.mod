@@ -22,7 +22,7 @@ require (
 	github.com/mitchellh/go-testing-interface v1.14.1 // indirect
 	github.com/mitchellh/go-wordwrap v1.0.1 // indirect
 	github.com/mitchellh/mapstructure v1.4.1 // indirect
-	github.com/slack-go/slack v0.9.3
+	github.com/slack-go/slack v0.9.4
 	github.com/stretchr/testify v1.7.0
 	github.com/ulikunitz/xz v0.5.10 // indirect
 	golang.org/x/crypto v0.0.0-20210616213533-5ff15b29337e // indirect
