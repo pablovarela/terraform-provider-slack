@@ -25,7 +25,7 @@ terraform {
 }
 
 # Configure Slack Provider
-provider slack {
+provider "slack" {
   token = var.slack_token
 }
 
@@ -42,7 +42,7 @@ resource "slack_usergroup" "my_group" {
 }
 
 # Create a Slack channel
-resource slack_conversation "test" {
+resource "slack_conversation" "test" {
   name              = "my-channel"
   topic             = "The topic for my channel"
   permanent_members = slack_usergroup.my_group.users
@@ -69,7 +69,7 @@ A static can be provided by adding `token` in-line in the Slack provider block:
 Usage:
 
 ```hcl
-provider slack {
+provider "slack" {
   token = var.slack_token
 }
 ```
@@ -79,7 +79,7 @@ provider slack {
 You can provide your token via the `SLACK_TOKEN` environment variable:
 
 ```hcl
-provider slack {}
+provider "slack" {}
 ```
 
 Usage:

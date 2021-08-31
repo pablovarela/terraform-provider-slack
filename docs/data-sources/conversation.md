@@ -26,7 +26,7 @@ the documentation for the methods above.
 ## Example Usage
 
 ```hcl
-data slack_conversation test {
+data "slack_conversation" "test" {
   channel_id = "my-channel"
 }
 ```
