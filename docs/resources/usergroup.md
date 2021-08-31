@@ -50,7 +50,7 @@ resource "slack_usergroup" "my_group" {
   users       = ["USER00"]
 }
 
-resource slack_conversation "test" {
+resource "slack_conversation" "test" {
   name              = "my-channel"
   topic             = "The topic for my channel"
   permanent_members = slack_usergroup.my_group.users

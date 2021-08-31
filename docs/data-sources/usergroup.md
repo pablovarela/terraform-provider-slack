@@ -24,11 +24,11 @@ the documentation for the methods above.
 ## Example Usage
 
 ```hcl
-data slack_usergroup by_name {
+data "slack_usergroup" "by_name" {
   name = "my-usergroup"
 }
 
-data slack_usergroup by_id {
+data "slack_usergroup" "by_id" {
   usergroup_id = "USERGROUP00"
 }
 ```

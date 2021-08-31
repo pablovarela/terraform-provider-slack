@@ -26,11 +26,11 @@ the documentation for the methods above.
 ## Example Usage
 
 ```hcl
-data slack_user by_name {
+data "slack_user" "by_name" {
   name = "my-user"
 }
 
-data slack_user by_email {
+data "slack_user" "by_email" {
   email = "my-user@example.com"
 }
 ```

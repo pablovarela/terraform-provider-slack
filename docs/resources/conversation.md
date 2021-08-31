@@ -35,7 +35,7 @@ the documentation for the methods above.
 ## Example Usage
 
 ```hcl
-resource slack_conversation test {
+resource "slack_conversation" "test" {
   name              = "my-channel"
   topic             = "The topic for my channel"
   permanent_members = []
