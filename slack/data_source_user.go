@@ -37,7 +37,7 @@ func dataSourceUserRead(ctx context.Context, d *schema.ResourceData, m interface
 	if name, ok := d.GetOk("name"); ok {
 		u, err := searchByName(ctx, name.(string), client)
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(fmt.Errorf("not found %s: %w", name.(string), err))
 		}
 		user = u
 	}
@@ -45,7 +45,7 @@ func dataSourceUserRead(ctx context.Context, d *schema.ResourceData, m interface
 	if email, ok := d.GetOk("email"); ok {
 		u, err := client.GetUserByEmailContext(ctx, email.(string))
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(fmt.Errorf("not found %s: %w", email.(string), err))
 		}
 		user = u
 	}
