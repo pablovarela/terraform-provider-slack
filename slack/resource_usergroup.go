@@ -73,7 +73,7 @@ func resourceSlackUserGroupCreate(ctx context.Context, d *schema.ResourceData, m
 	}
 	createdUserGroup, err := client.CreateUserGroupContext(ctx, userGroup)
 	if err != nil {
-		if err.Error() != "name_already_exists" {
+		if err.Error() != "name_already_exists" && err.Error() != "handle_already_exists" {
 			return diag.Errorf("could not create usergroup %s: %s", name, err)
 		}
 		group, err := findUserGroupByName(ctx, name, true, m)
