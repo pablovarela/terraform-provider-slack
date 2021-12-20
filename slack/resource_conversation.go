@@ -3,11 +3,23 @@ package slack
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/slack-go/slack"
 )
+
+const (
+	conversationActionOnDestroyNone    = "none"
+	conversationActionOnDestroyArchive = "archive"
+)
+
+var validateConversationActionOnDestroyValue = validation.StringInSlice([]string{
+	conversationActionOnDestroyNone,
+	conversationActionOnDestroyArchive,
+}, false)
 
 func resourceSlackConversation() *schema.Resource {
 	return &schema.Resource{
@@ -74,6 +86,12 @@ func resourceSlackConversation() *schema.Resource {
 			"is_general": {
 				Type:     schema.TypeBool,
 				Computed: true,
+			},
+			"action_on_destroy": {
+				Type:         schema.TypeString,
+				Description:  "Either of none or archive",
+				Required:     true,
+				ValidateFunc: validateConversationActionOnDestroyValue,
 			},
 		},
 	}
@@ -246,12 +264,19 @@ func resourceSlackConversationDelete(ctx context.Context, d *schema.ResourceData
 	client := m.(*slack.Client)
 
 	id := d.Id()
-	err := archiveConversationWithContext(ctx, client, id)
-	if err != nil {
-		if err.Error() == "channel_not_found" {
-			return diags
+	action := d.Get("action_on_destroy").(string)
+	switch action {
+
+	case conversationActionOnDestroyNone:
+		log.Printf("[DEBUG] Do nothing on Conversation: %s (%s)", id, d.Get("name"))
+	case conversationActionOnDestroyArchive:
+		err := archiveConversationWithContext(ctx, client, id)
+		if err != nil {
+			if err.Error() == "channel_not_found" {
+				return diags
+			}
+			return diag.FromErr(err)
 		}
-		return diag.FromErr(err)
 	}
 
 	return diags
