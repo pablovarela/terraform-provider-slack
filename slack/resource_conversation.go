@@ -3,7 +3,6 @@ package slack
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -90,7 +89,8 @@ func resourceSlackConversation() *schema.Resource {
 			"action_on_destroy": {
 				Type:         schema.TypeString,
 				Description:  "Either of none or archive",
-				Required:     true,
+				Optional:     true,
+				Default:      "archive",
 				ValidateFunc: validateConversationActionOnDestroyValue,
 			},
 		},
@@ -268,7 +268,7 @@ func resourceSlackConversationDelete(ctx context.Context, d *schema.ResourceData
 	switch action {
 
 	case conversationActionOnDestroyNone:
-		log.Printf("[DEBUG] Do nothing on Conversation: %s (%s)", id, d.Get("name"))
+		fmt.Sprintf("Do nothing on Conversation: %s (%s)", id, d.Get("name"))
 	case conversationActionOnDestroyArchive:
 		err := archiveConversationWithContext(ctx, client, id)
 		if err != nil {
