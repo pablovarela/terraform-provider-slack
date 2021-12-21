@@ -43,6 +43,18 @@ resource "slack_conversation" "test" {
 }
 ```
 
+```hcl
+resource "slack_conversation" "nonadmin" {
+  name              = "my-channel01"
+  topic             = "The channel won't be archived on destroy"
+  permanent_members = []
+  is_private        = true
+  action_on_destroy = "none"
+  
+  
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -53,6 +65,7 @@ The following arguments are supported:
 - `permanent_members` - (Optional) user IDs to add to the channel.
 - `is_private` - (Optional) create a private channel instead of a public one.
 - `is_archived` - (Optional) indicates a conversation is archived. Frozen in time.
+- `action_on_destroy` - (Optional, Default `archive`) indicates whether the conversation should be archived or left behind on destroy. Valid values are `archive | none`.
 
 ## Attribute Reference
 
