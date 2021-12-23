@@ -65,7 +65,7 @@ The following arguments are supported:
 - `permanent_members` - (Optional) user IDs to add to the channel.
 - `is_private` - (Optional) create a private channel instead of a public one.
 - `is_archived` - (Optional) indicates a conversation is archived. Frozen in time.
-- `action_on_destroy` - (Optional, Default `archive`) indicates whether the conversation should be archived or left behind on destroy. Valid values are `archive | none`. Note that when set to `none` the conversation will be left as it is as and a result any subsequent runs of terraform apply with the same name  will fail.
+- `action_on_destroy` - (Optional, Default `archive`) indicates whether the conversation should be archived or left behind on destroy. Valid values are `archive | none`. Note that when set to `none` the conversation will be left as it is  and as a result any subsequent runs of terraform apply with the same name  will fail.
 
 ## Attribute Reference
 
