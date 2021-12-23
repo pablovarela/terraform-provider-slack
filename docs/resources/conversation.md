@@ -50,8 +50,6 @@ resource "slack_conversation" "nonadmin" {
   permanent_members = []
   is_private        = true
   action_on_destroy = "none"
-  
-  
 }
 ```
 

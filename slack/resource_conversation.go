@@ -15,10 +15,13 @@ const (
 	conversationActionOnDestroyArchive = "archive"
 )
 
-var validateConversationActionOnDestroyValue = validation.StringInSlice([]string{
-	conversationActionOnDestroyNone,
-	conversationActionOnDestroyArchive,
-}, false)
+var (
+	conversationActionValidValues = []string{
+		conversationActionOnDestroyNone,
+		conversationActionOnDestroyArchive,
+	}
+	validateConversationActionOnDestroyValue = validation.StringInSlice(conversationActionValidValues, false)
+)
 
 func resourceSlackConversation() *schema.Resource {
 	return &schema.Resource{
@@ -266,9 +269,12 @@ func resourceSlackConversationDelete(ctx context.Context, d *schema.ResourceData
 	id := d.Id()
 	action := d.Get("action_on_destroy").(string)
 	switch action {
-
 	case conversationActionOnDestroyNone:
-		fmt.Sprintf("Do nothing on Conversation: %s (%s)", id, d.Get("name"))
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  fmt.Sprintf("conversation %s (%s) won't be archived on destroy", id, d.Get("name")),
+			Detail:   fmt.Sprintf("action_on_destroy is set to %s which does not archive the conversation ", conversationActionOnDestroyNone),
+		})
 	case conversationActionOnDestroyArchive:
 		err := archiveConversationWithContext(ctx, client, id)
 		if err != nil {
@@ -277,6 +283,8 @@ func resourceSlackConversationDelete(ctx context.Context, d *schema.ResourceData
 			}
 			return diag.FromErr(err)
 		}
+	default:
+		return diag.Errorf("unknown action_on_destroy value. Valid values are %v", conversationActionValidValues)
 	}
 
 	return diags
