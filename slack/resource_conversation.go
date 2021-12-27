@@ -6,7 +6,21 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/slack-go/slack"
+)
+
+const (
+	conversationActionOnDestroyNone    = "none"
+	conversationActionOnDestroyArchive = "archive"
+)
+
+var (
+	conversationActionValidValues = []string{
+		conversationActionOnDestroyNone,
+		conversationActionOnDestroyArchive,
+	}
+	validateConversationActionOnDestroyValue = validation.StringInSlice(conversationActionValidValues, false)
 )
 
 func resourceSlackConversation() *schema.Resource {
@@ -74,6 +88,13 @@ func resourceSlackConversation() *schema.Resource {
 			"is_general": {
 				Type:     schema.TypeBool,
 				Computed: true,
+			},
+			"action_on_destroy": {
+				Type:         schema.TypeString,
+				Description:  "Either of none or archive",
+				Optional:     true,
+				Default:      "archive",
+				ValidateFunc: validateConversationActionOnDestroyValue,
 			},
 		},
 	}
@@ -246,12 +267,24 @@ func resourceSlackConversationDelete(ctx context.Context, d *schema.ResourceData
 	client := m.(*slack.Client)
 
 	id := d.Id()
-	err := archiveConversationWithContext(ctx, client, id)
-	if err != nil {
-		if err.Error() == "channel_not_found" {
-			return diags
+	action := d.Get("action_on_destroy").(string)
+	switch action {
+	case conversationActionOnDestroyNone:
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  fmt.Sprintf("conversation %s (%s) won't be archived on destroy", id, d.Get("name")),
+			Detail:   fmt.Sprintf("action_on_destroy is set to %s which does not archive the conversation ", conversationActionOnDestroyNone),
+		})
+	case conversationActionOnDestroyArchive:
+		err := archiveConversationWithContext(ctx, client, id)
+		if err != nil {
+			if err.Error() == "channel_not_found" {
+				return diags
+			}
+			return diag.FromErr(err)
 		}
-		return diag.FromErr(err)
+	default:
+		return diag.Errorf("unknown action_on_destroy value. Valid values are %v", conversationActionValidValues)
 	}
 
 	return diags
