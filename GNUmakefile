@@ -17,7 +17,7 @@ tools: download
 	@echo "==> Installing tools from tools.go"
 	@go list -f '{{range .Imports}}{{.}} {{end}}' tools.go | xargs go install
 
-lint: vet docs
+lint: tools vet docs
 	@echo "==> Checking source code against linters..."
 	golangci-lint run -v
 
