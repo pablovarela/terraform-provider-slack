@@ -66,4 +66,4 @@ docscheck:
 		-allowed-resource-subcategories-file docs/allowed-subcategories.txt \
 		-require-resource-subcategory
 
-.PHONY: build tools lint sweep test testacc vet depscheck docs docs-lint docs-lint-fix docscheck
+.PHONY: build download tools lint sweep test testacc vet depscheck docs docs-lint docs-lint-fix docscheck
