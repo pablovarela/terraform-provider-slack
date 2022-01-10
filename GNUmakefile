@@ -11,11 +11,11 @@ bin:
 
 tools:
 	@echo "==> Installing external tools..."
-	GO111MODULE=on go get -u golang.org/x/lint/golint
-	GO111MODULE=on go get -u github.com/gordonklaus/ineffassign
-	GO111MODULE=on go get -u github.com/client9/misspell/cmd/misspell
-	GO111MODULE=on go get -u github.com/katbyte/terrafmt
-	GO111MODULE=on go get -u github.com/bflad/tfproviderdocs
+	GO111MODULE=on go install golang.org/x/lint/golint
+	GO111MODULE=on go install github.com/gordonklaus/ineffassign
+	GO111MODULE=on go install github.com/client9/misspell/cmd/misspell
+	GO111MODULE=on go install github.com/katbyte/terrafmt
+	GO111MODULE=on go install github.com/bflad/tfproviderdocs
 
 fmt:
 	@echo "==> Fixing source code with gofmt..."
