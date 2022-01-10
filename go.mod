@@ -5,9 +5,8 @@ go 1.16
 require (
 	cloud.google.com/go v0.86.0 // indirect
 	cloud.google.com/go/storage v1.16.0 // indirect
-	github.com/agext/levenshtein v1.2.3 // indirect
 	github.com/aws/aws-sdk-go v1.38.71 // indirect
-	github.com/bflad/tfproviderdocs v0.9.1 // indirect
+	github.com/bflad/tfproviderdocs v0.9.1
 	github.com/fatih/color v1.12.0 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/snappy v0.0.4 // indirect
@@ -16,7 +15,7 @@ require (
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/hashicorp/hcl/v2 v2.10.0 // indirect
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.10.1
-	github.com/katbyte/terrafmt v0.3.0 // indirect
+	github.com/katbyte/terrafmt v0.3.0
 	github.com/klauspost/compress v1.13.1 // indirect
 	github.com/mattn/go-isatty v0.0.13 // indirect
 	github.com/mitchellh/go-wordwrap v1.0.1 // indirect
