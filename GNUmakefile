@@ -9,21 +9,17 @@ bin:
 	go install
 	scripts/install_plugin.sh
 
-tools:
-	@echo "==> Installing external tools..."
-	GO111MODULE=on go install golang.org/x/lint/golint
+download:
+	@echo "==> Download go.mod dependencies"
+	@go mod download
 
-fmt:
-	@echo "==> Fixing source code with gofmt..."
-	gofmt -s -w $(GOFMT_FILES)
+tools: download
+	@echo "==> Installing tools from tools.go"
+	@go list -f '{{range .Imports}}{{.}} {{end}}' tools.go | xargs go install
 
-fmtcheck:
-	@sh -c "'$(CURDIR)/scripts/gofmtcheck.sh'"
-
-lint: tools fmtcheck vet docs
+lint: vet docs
 	@echo "==> Checking source code against linters..."
-	golint -set_exit_status $$(find . -type d | grep -v vendor)
-	ineffassign .
+	golangci-lint run -v
 
 sweep:
 	@echo "WARNING: This will destroy infrastructure. Use only in development accounts."
@@ -50,10 +46,6 @@ docs: docs-lint docscheck
 
 docs-lint:
 	@echo "==> Checking docs against linters..."
-	@misspell -error -source=text docs/ || (echo; \
-		echo "Unexpected misspelling found in docs files."; \
-		echo "To automatically fix the misspelling, run 'make docs-lint-fix' and commit the changes."; \
-		exit 1)
 	@docker run -v $(PWD):/markdown 06kellyjac/markdownlint-cli docs/ || (echo; \
 		echo "Unexpected issues found in docs Markdown files."; \
 		echo "To apply any automatic fixes, run 'make docs-lint-fix' and commit the changes."; \
@@ -66,7 +58,6 @@ docs-lint:
 
 docs-lint-fix:
 	@echo "==> Applying automatic docs linter fixes..."
-	@misspell -w -source=text docs/
 	@docker run -v $(PWD):/markdown 06kellyjac/markdownlint-cli --fix docs/
 	@terrafmt fmt ./docs --pattern '*.md'
 
@@ -74,6 +65,5 @@ docscheck:
 	@tfproviderdocs check \
 		-allowed-resource-subcategories-file docs/allowed-subcategories.txt \
 		-require-resource-subcategory
-	@misspell -error -source text CHANGELOG.md
 
-.PHONY: build tools fmt fmtcheck lint sweep test testacc vet depscheck docs docs-lint docs-lint-fix docscheck
+.PHONY: build tools lint sweep test testacc vet depscheck docs docs-lint docs-lint-fix docscheck
