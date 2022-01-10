@@ -3,7 +3,7 @@ name: Build
 on:
   push:
     branches: [ master ]
-  pull_request_target:
+  pull_request:
     branches: [ master ]
 
 jobs:
@@ -28,9 +28,6 @@ jobs:
 
       - name: Check out code
         uses: actions/checkout@v2.4
-        with:
-          ref: 'refs/pull/${{ github.event.number }}/merge'
-          repository: ${{github.event.pull_request.head.repo.full_name}}
 
       - name: Run Acceptance Tests
         env:
