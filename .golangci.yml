@@ -1,10 +1,11 @@
 linters:
   enable:
     - goimports
-    - golint
+    - revive
     - gomnd
     - gofmt
     - dupl
     - misspell
     - goconst
     - whitespace
+    - govet
