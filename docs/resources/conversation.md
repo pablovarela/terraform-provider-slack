@@ -12,7 +12,7 @@ Manages a Slack channel
 This resource requires the following scopes:
 
 - [channels:read](https://api.slack.com/scopes/channels:read) (public channels)
-- [channels:write](https://api.slack.com/scopes/channels:write) (public channels)
+- [channels:manage](https://api.slack.com/scopes/channels:manage) (public channels)
 - [groups:read](https://api.slack.com/scopes/groups:read) (private channels)
 - [groups:write](https://api.slack.com/scopes/groups:write) (private channels)
 
