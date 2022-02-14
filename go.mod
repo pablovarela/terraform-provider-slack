@@ -20,7 +20,7 @@ require (
 	github.com/mattn/go-isatty v0.0.13 // indirect
 	github.com/mitchellh/go-wordwrap v1.0.1 // indirect
 	github.com/mitchellh/mapstructure v1.4.1 // indirect
-	github.com/slack-go/slack v0.10.1
+	github.com/slack-go/slack v0.10.2
 	github.com/stretchr/testify v1.7.0
 	github.com/ulikunitz/xz v0.5.10 // indirect
 	github.com/ysmood/golangci-lint v0.4.0
