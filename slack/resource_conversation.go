@@ -3,7 +3,9 @@ package slack
 import (
 	"context"
 	"fmt"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -112,6 +114,11 @@ func resourceSlackConversation() *schema.Resource {
 				Default:      "kick",
 				ValidateFunc: validateConversationActionOnUpdatePermanentMembers,
 			},
+			"adopt_existing_channel": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+			},
 		},
 	}
 }
@@ -123,6 +130,17 @@ func resourceSlackConversationCreate(ctx context.Context, d *schema.ResourceData
 	isPrivate := d.Get("is_private").(bool)
 
 	channel, err := client.CreateConversationContext(ctx, name, isPrivate)
+	if err != nil && err.Error() == "name_taken" && d.Get("adopt_existing_channel").(bool) {
+		channel, err = findExistingChannel(ctx, client, name, isPrivate)
+		if err == nil && channel.IsArchived {
+			// ensure unarchived first if adopting existing channel, else other calls below will fail
+			if err := client.UnArchiveConversationContext(ctx, channel.ID); err != nil {
+				if err.Error() != "not_archived" {
+					return diag.Errorf("couldn't unarchive conversation %s: %s", channel.ID, err)
+				}
+			}
+		}
+	}
 	if err != nil {
 		return diag.Errorf("could not create conversation %s: %s", name, err)
 	}
@@ -155,6 +173,54 @@ func resourceSlackConversationCreate(ctx context.Context, d *schema.ResourceData
 
 	d.SetId(channel.ID)
 	return resourceSlackConversationRead(ctx, d, m)
+}
+
+func findExistingChannel(ctx context.Context, client *slack.Client, name string, isPrivate bool) (*slack.Channel, error) {
+	// find the existing channel. Sadly, there is no non-admin API to search by name,
+	// so we must search through ALL the channels
+	tflog.Info(ctx, "Looking for channel %s", name)
+	paginationComplete := false
+	cursor := ""       // initial empty cursor to begin at start of list
+	var types []string // default value with empty list is "public_channel"
+	if isPrivate {
+		types = append(types, "private_channel")
+	}
+	for !paginationComplete {
+		channels, nextCursor, err := client.GetConversationsContext(ctx, &slack.GetConversationsParameters{
+			Cursor: cursor,
+			Limit:  200, // 100 is default, docs recommend no more than 200, but 1000 is the max
+			Types:  types,
+		})
+		tflog.Debug(ctx, "got %d channels, nextCursor %s, err: %v", len(channels), nextCursor, err)
+		if err != nil {
+			if rateLimitedError, ok := err.(*slack.RateLimitedError); ok {
+				tflog.Warn(ctx, "rate limited for %f seconds", rateLimitedError.RetryAfter.Seconds())
+				select {
+				case <-ctx.Done():
+					return nil, fmt.Errorf("canceled during pagination: %s", ctx.Err())
+				case <-time.After(rateLimitedError.RetryAfter):
+					tflog.Debug(ctx, "done sleeping after rate limited")
+				}
+				// retry current cursor
+			} else {
+				return nil, fmt.Errorf("name_taken, but %s trying to find", err)
+			}
+		} else {
+			// see if channel in current batch
+			for _, c := range channels {
+				tflog.Trace(ctx, "current channel %s", c.Name)
+				if c.Name == name {
+					tflog.Info(ctx, "found channel")
+					return &c, nil
+				}
+			}
+			// not found so far, move on to next cursor, if pagination incomplete
+			paginationComplete = nextCursor == ""
+			cursor = nextCursor
+		}
+	}
+	// looked through entire list, but didn't find matching name
+	return nil, fmt.Errorf("name_taken, but could not find channel")
 }
 
 func updateChannelMembers(ctx context.Context, d *schema.ResourceData, client *slack.Client, channelID string) error {
@@ -265,7 +331,7 @@ func resourceSlackConversationUpdate(ctx context.Context, d *schema.ResourceData
 		} else {
 			if err := client.UnArchiveConversationContext(ctx, id); err != nil {
 				if err.Error() != "not_archived" {
-					return diag.Errorf("couldn't archive conversation %s: %s", id, err)
+					return diag.Errorf("couldn't unarchive conversation %s: %s", id, err)
 				}
 			}
 		}
