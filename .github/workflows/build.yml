@@ -15,7 +15,7 @@ jobs:
       - name: Set up Go 1.16
         uses: actions/setup-go@v2
         with:
-          go-version: ^1.16
+          go-version: 1.16
         id: go
 
       - name: Setup Go cache
@@ -27,7 +27,7 @@ jobs:
             ${{ runner.os }}-go-
 
       - name: Check out code
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@v3
 
       - name: Run Acceptance Tests
         env:

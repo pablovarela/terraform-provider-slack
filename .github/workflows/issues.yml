@@ -4,7 +4,7 @@ jobs:
   markIssuesForTriage:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2.3.4
+    - uses: actions/checkout@v3
     - name: Apply Issue Triage Label
       uses: actions/github@v1.0.0
       if: github.event.action == 'opened' && !contains(fromJSON('["pablovarela"]'), github.actor)
