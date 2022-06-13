@@ -27,7 +27,7 @@ jobs:
             ${{ runner.os }}-go-
 
       - name: Check out code
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@v3
 
       - name: Run Acceptance Tests
         env:
