@@ -21,11 +21,10 @@ require (
 	github.com/mitchellh/go-wordwrap v1.0.1 // indirect
 	github.com/mitchellh/mapstructure v1.4.1 // indirect
 	github.com/slack-go/slack v0.10.2
-	github.com/stretchr/testify v1.7.0
+	github.com/stretchr/testify v1.7.2
 	github.com/ulikunitz/xz v0.5.10 // indirect
 	github.com/ysmood/golangci-lint v0.5.2
 	golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c // indirect
 	google.golang.org/genproto v0.0.0-20210701191553-46259e63a0a9 // indirect
 	google.golang.org/grpc v1.39.0 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )
