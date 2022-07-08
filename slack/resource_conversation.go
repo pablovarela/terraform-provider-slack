@@ -248,6 +248,13 @@ func updateChannelMembers(ctx context.Context, d *schema.ResourceData, client *s
 		return fmt.Errorf("could not retrieve conversation users for ID %s: %w", channelID, err)
 	}
 
+	// first, ensure the api user is in the channel, otherwise other member modifications below may fail
+	if _, _, _, err := client.JoinConversationContext(ctx, channelID); err != nil {
+		if err.Error() != "already_in_channel" {
+			return fmt.Errorf("api user could not join conversation: %w", err)
+		}
+	}
+
 	action := d.Get("action_on_update_permanent_members").(string)
 	if action == conversationActionOnUpdatePermanentMembersKick {
 		for _, currentMember := range channelUsers {
