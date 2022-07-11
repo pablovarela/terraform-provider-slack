@@ -178,7 +178,7 @@ func resourceSlackConversationCreate(ctx context.Context, d *schema.ResourceData
 func findExistingChannel(ctx context.Context, client *slack.Client, name string, isPrivate bool) (*slack.Channel, error) {
 	// find the existing channel. Sadly, there is no non-admin API to search by name,
 	// so we must search through ALL the channels
-	tflog.Info(ctx, "Looking for channel %s", name)
+	tflog.Info(ctx, "Looking for channel %s", map[string]interface{}{"channel": name})
 	paginationComplete := false
 	cursor := ""       // initial empty cursor to begin at start of list
 	var types []string // default value with empty list is "public_channel"
@@ -191,10 +191,14 @@ func findExistingChannel(ctx context.Context, client *slack.Client, name string,
 			Limit:  200, // 100 is default, docs recommend no more than 200, but 1000 is the max
 			Types:  types,
 		})
-		tflog.Debug(ctx, "got %d channels, nextCursor %s, err: %v", len(channels), nextCursor, err)
+		tflog.Debug(ctx, "new page of channels",
+			map[string]interface{}{
+				"numChannels": len(channels),
+				"nextCursor":  nextCursor,
+				"err":         err})
 		if err != nil {
 			if rateLimitedError, ok := err.(*slack.RateLimitedError); ok {
-				tflog.Warn(ctx, "rate limited for %f seconds", rateLimitedError.RetryAfter.Seconds())
+				tflog.Warn(ctx, "rate limited", map[string]interface{}{"seconds": rateLimitedError.RetryAfter.Seconds()})
 				select {
 				case <-ctx.Done():
 					return nil, fmt.Errorf("canceled during pagination: %s", ctx.Err())
@@ -208,7 +212,7 @@ func findExistingChannel(ctx context.Context, client *slack.Client, name string,
 		} else {
 			// see if channel in current batch
 			for _, c := range channels {
-				tflog.Trace(ctx, "current channel %s", c.Name)
+				tflog.Trace(ctx, "checking channel", map[string]interface{}{"channel": c.Name})
 				if c.Name == name {
 					tflog.Info(ctx, "found channel")
 					return &c, nil
