@@ -144,7 +144,7 @@ func testSlackConversationUpdate(t *testing.T, resourceName string, createChanne
 			ResourceName:            resourceName,
 			ImportState:             true,
 			ImportStateVerify:       true,
-			ImportStateVerifyIgnore: []string{"permanent_members", "action_on_destroy"},
+			ImportStateVerifyIgnore: []string{"permanent_members", "action_on_destroy", "action_on_update_permanent_members"},
 		},
 	}
 
