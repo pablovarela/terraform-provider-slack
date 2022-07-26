@@ -13,6 +13,9 @@ import (
 const (
 	conversationActionOnDestroyNone    = "none"
 	conversationActionOnDestroyArchive = "archive"
+
+	conversationActionOnUpdatePermanentMembersNone = "none"
+	conversationActionOnUpdatePermanentMembersKick = "kick"
 )
 
 var (
@@ -20,7 +23,13 @@ var (
 		conversationActionOnDestroyNone,
 		conversationActionOnDestroyArchive,
 	}
-	validateConversationActionOnDestroyValue = validation.StringInSlice(conversationActionValidValues, false)
+	conversationActionOnUpdatePermanentMembersValidValues = []string{
+		conversationActionOnUpdatePermanentMembersNone,
+		conversationActionOnUpdatePermanentMembersKick,
+	}
+
+	validateConversationActionOnDestroyValue           = validation.StringInSlice(conversationActionValidValues, false)
+	validateConversationActionOnUpdatePermanentMembers = validation.StringInSlice(conversationActionOnUpdatePermanentMembersValidValues, false)
 )
 
 func resourceSlackConversation() *schema.Resource {
@@ -96,6 +105,13 @@ func resourceSlackConversation() *schema.Resource {
 				Default:      "archive",
 				ValidateFunc: validateConversationActionOnDestroyValue,
 			},
+			"action_on_update_permanent_members": {
+				Type:         schema.TypeString,
+				Description:  "Either of none or kick",
+				Optional:     true,
+				Default:      "kick",
+				ValidateFunc: validateConversationActionOnUpdatePermanentMembers,
+			},
 		},
 	}
 }
@@ -153,7 +169,7 @@ func updateChannelMembers(ctx context.Context, d *schema.ResourceData, client *s
 	apiUserInfo, err := client.AuthTest()
 
 	if err != nil {
-		return fmt.Errorf("Error authenticating with slack %w", err)
+		return fmt.Errorf("error authenticating with slack %w", err)
 	}
 	userIds = remove(userIds, apiUserInfo.UserID)
 	userIds = remove(userIds, channel.Creator)
@@ -166,10 +182,13 @@ func updateChannelMembers(ctx context.Context, d *schema.ResourceData, client *s
 		return fmt.Errorf("could not retrieve conversation users for ID %s: %w", channelID, err)
 	}
 
-	for _, currentMember := range channelUsers {
-		if currentMember != channel.Creator && currentMember != apiUserInfo.UserID && !contains(userIds, currentMember) {
-			if err := client.KickUserFromConversationContext(ctx, channelID, currentMember); err != nil {
-				return fmt.Errorf("couldn't kick user from conversation: %w", err)
+	action := d.Get("action_on_update_permanent_members").(string)
+	if action == conversationActionOnUpdatePermanentMembersKick {
+		for _, currentMember := range channelUsers {
+			if currentMember != channel.Creator && currentMember != apiUserInfo.UserID && !contains(userIds, currentMember) {
+				if err := client.KickUserFromConversationContext(ctx, channelID, currentMember); err != nil {
+					return fmt.Errorf("couldn't kick user from conversation: %w", err)
+				}
 			}
 		}
 	}
