@@ -68,6 +68,10 @@ conversation should be archived or left behind on destroy. Valid values are
 `archive | none`. Note that when set to `none` the conversation will be left
 as it is  and as a result any subsequent runs of terraform apply with the same
 name  will fail.
+- `action_on_update_permanent_members` - (Optional, Default `kick`) indicate
+whether the members should be kick of the channel when removed from
+`permanent_members`. When set to `none` the user are never kicked, this prevent
+ a side effect on public channels where user that joined the channel are kicked.
 
 ## Attribute Reference
 
