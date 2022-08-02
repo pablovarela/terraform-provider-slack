@@ -96,6 +96,7 @@ channel with the same name should be adopted by terraform and put under state
 management. If the existing channel is archived, it will be unarchived. (Note: for 
 unarchiving of existing channels to work correctly, you _must_ use a user token,
 not a bot token, due to bugs in the Slack API)
+
 ## Attribute Reference
 
 In addition to all arguments above, the following attributes are exported:
