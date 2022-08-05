@@ -18,6 +18,10 @@ const (
 
 	conversationActionOnUpdatePermanentMembersNone = "none"
 	conversationActionOnUpdatePermanentMembersKick = "kick"
+
+	// 100 is default, slack docs recommend no more than 200, but 1000 is the max.
+	// See also https://github.com/slack-go/slack/blob/master/users.go#L305
+	cursorLimit = 200
 )
 
 var (
@@ -188,7 +192,7 @@ func findExistingChannel(ctx context.Context, client *slack.Client, name string,
 	for !paginationComplete {
 		channels, nextCursor, err := client.GetConversationsContext(ctx, &slack.GetConversationsParameters{
 			Cursor: cursor,
-			Limit:  200, // 100 is default, docs recommend no more than 200, but 1000 is the max
+			Limit:  cursorLimit,
 			Types:  types,
 		})
 		tflog.Debug(ctx, "new page of channels",
