@@ -369,8 +369,8 @@ github.com/jstemmer/go-junit-report v0.0.0-20190106144839-af01ea7f8024/go.mod h1
 github.com/jstemmer/go-junit-report v0.9.1/go.mod h1:Brl9GWCQeLvo8nXZwPNNblvFj/XSXhF0NWZEnDohbsk=
 github.com/julienschmidt/httprouter v1.2.0/go.mod h1:SYymIcj16QtmaHHD7aYtjjsJG7VTCxuUUipMqKk8s4w=
 github.com/julienschmidt/httprouter v1.3.0/go.mod h1:JR6WtHb+2LUe8TCKY3cZOxFyyO8IZAc4RVcycCCAKdM=
-github.com/katbyte/terrafmt v0.5.0 h1:o4Ns/PWP63QIW77iw1jj7NE3Gxhlm0x3ch73t3kurnE=
-github.com/katbyte/terrafmt v0.5.0/go.mod h1:dOZmx0AXdqU4RUZ5obO1rjh4PAE0d5Dr3ho8gK/8R2k=
+github.com/katbyte/terrafmt v0.5.1 h1:+b3LSVW1D68F8dEMuGZ4S71XG8+UBZriG13mtigTQk0=
+github.com/katbyte/terrafmt v0.5.1/go.mod h1:Nbnby0L7zGx/qI4+Y0rA71S9a+kf99CsSlZgH5TI8MU=
 github.com/kevinburke/ssh_config v0.0.0-20201106050909-4977a11b4351 h1:DowS9hvgyYSX4TO5NpyC606/Z4SxnNYbT+WX27or6Ck=
 github.com/kevinburke/ssh_config v0.0.0-20201106050909-4977a11b4351/go.mod h1:CT57kijsi8u/K/BOFA39wgDQJ9CxiF4nAY/ojJ6r6mM=
 github.com/kisielk/errcheck v1.5.0/go.mod h1:pFxgyoBC7bSaBwPgfKdkLd5X25qrDl4LWUI2bnpBCr8=
