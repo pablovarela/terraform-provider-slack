@@ -3,7 +3,9 @@ package slack
 import (
 	"context"
 	"fmt"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -16,6 +18,10 @@ const (
 
 	conversationActionOnUpdatePermanentMembersNone = "none"
 	conversationActionOnUpdatePermanentMembersKick = "kick"
+
+	// 100 is default, slack docs recommend no more than 200, but 1000 is the max.
+	// See also https://github.com/slack-go/slack/blob/master/users.go#L305
+	cursorLimit = 200
 )
 
 var (
@@ -112,6 +118,11 @@ func resourceSlackConversation() *schema.Resource {
 				Default:      "kick",
 				ValidateFunc: validateConversationActionOnUpdatePermanentMembers,
 			},
+			"adopt_existing_channel": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+			},
 		},
 	}
 }
@@ -123,6 +134,17 @@ func resourceSlackConversationCreate(ctx context.Context, d *schema.ResourceData
 	isPrivate := d.Get("is_private").(bool)
 
 	channel, err := client.CreateConversationContext(ctx, name, isPrivate)
+	if err != nil && err.Error() == "name_taken" && d.Get("adopt_existing_channel").(bool) {
+		channel, err = findExistingChannel(ctx, client, name, isPrivate)
+		if err == nil && channel.IsArchived {
+			// ensure unarchived first if adopting existing channel, else other calls below will fail
+			if err := client.UnArchiveConversationContext(ctx, channel.ID); err != nil {
+				if err.Error() != "not_archived" {
+					return diag.Errorf("couldn't unarchive conversation %s: %s", channel.ID, err)
+				}
+			}
+		}
+	}
 	if err != nil {
 		return diag.Errorf("could not create conversation %s: %s", name, err)
 	}
@@ -157,6 +179,58 @@ func resourceSlackConversationCreate(ctx context.Context, d *schema.ResourceData
 	return resourceSlackConversationRead(ctx, d, m)
 }
 
+func findExistingChannel(ctx context.Context, client *slack.Client, name string, isPrivate bool) (*slack.Channel, error) {
+	// find the existing channel. Sadly, there is no non-admin API to search by name,
+	// so we must search through ALL the channels
+	tflog.Info(ctx, "Looking for channel %s", map[string]interface{}{"channel": name})
+	paginationComplete := false
+	cursor := ""       // initial empty cursor to begin at start of list
+	var types []string // default value with empty list is "public_channel"
+	if isPrivate {
+		types = append(types, "private_channel")
+	}
+	for !paginationComplete {
+		channels, nextCursor, err := client.GetConversationsContext(ctx, &slack.GetConversationsParameters{
+			Cursor: cursor,
+			Limit:  cursorLimit,
+			Types:  types,
+		})
+		tflog.Debug(ctx, "new page of channels",
+			map[string]interface{}{
+				"numChannels": len(channels),
+				"nextCursor":  nextCursor,
+				"err":         err})
+		if err != nil {
+			if rateLimitedError, ok := err.(*slack.RateLimitedError); ok {
+				tflog.Warn(ctx, "rate limited", map[string]interface{}{"seconds": rateLimitedError.RetryAfter.Seconds()})
+				select {
+				case <-ctx.Done():
+					return nil, fmt.Errorf("canceled during pagination: %s", ctx.Err())
+				case <-time.After(rateLimitedError.RetryAfter):
+					tflog.Debug(ctx, "done sleeping after rate limited")
+				}
+				// retry current cursor
+			} else {
+				return nil, fmt.Errorf("name_taken, but %s trying to find", err)
+			}
+		} else {
+			// see if channel in current batch
+			for _, c := range channels {
+				tflog.Trace(ctx, "checking channel", map[string]interface{}{"channel": c.Name})
+				if c.Name == name {
+					tflog.Info(ctx, "found channel")
+					return &c, nil
+				}
+			}
+			// not found so far, move on to next cursor, if pagination incomplete
+			paginationComplete = nextCursor == ""
+			cursor = nextCursor
+		}
+	}
+	// looked through entire list, but didn't find matching name
+	return nil, fmt.Errorf("name_taken, but could not find channel")
+}
+
 func updateChannelMembers(ctx context.Context, d *schema.ResourceData, client *slack.Client, channelID string) error {
 	members := d.Get("permanent_members").(*schema.Set)
 
@@ -180,6 +254,13 @@ func updateChannelMembers(ctx context.Context, d *schema.ResourceData, client *s
 
 	if err != nil {
 		return fmt.Errorf("could not retrieve conversation users for ID %s: %w", channelID, err)
+	}
+
+	// first, ensure the api user is in the channel, otherwise other member modifications below may fail
+	if _, _, _, err := client.JoinConversationContext(ctx, channelID); err != nil {
+		if err.Error() != "already_in_channel" && err.Error() != "method_not_supported_for_channel_type" {
+			return fmt.Errorf("api user could not join conversation: %w", err)
+		}
 	}
 
 	action := d.Get("action_on_update_permanent_members").(string)
@@ -265,7 +346,7 @@ func resourceSlackConversationUpdate(ctx context.Context, d *schema.ResourceData
 		} else {
 			if err := client.UnArchiveConversationContext(ctx, id); err != nil {
 				if err.Error() != "not_archived" {
-					return diag.Errorf("couldn't archive conversation %s: %s", id, err)
+					return diag.Errorf("couldn't unarchive conversation %s: %s", id, err)
 				}
 			}
 		}
