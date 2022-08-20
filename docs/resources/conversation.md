@@ -98,10 +98,10 @@ name  will fail.
 whether the members should be kick of the channel when removed from
 `permanent_members`. When set to `none` the user are never kicked, this prevent
  a side effect on public channels where user that joined the channel are kicked.
-- `adopt_existing_channel` (Optional, Default `false`) indicates that an 
+- `adopt_existing_channel` (Optional, Default `false`) indicates that an
 existing channel with the same name should be adopted by terraform and put under
 state management. If the existing channel is archived, it will be unarchived.
-(Note: for unarchiving of existing channels to work correctly, you_must_ use 
+(Note: for unarchiving of existing channels to work correctly, you_must_ use
 a user token, not a bot token, due to bugs in the Slack API)
 
 ## Attribute Reference
