@@ -258,7 +258,7 @@ func updateChannelMembers(ctx context.Context, d *schema.ResourceData, client *s
 
 	// first, ensure the api user is in the channel, otherwise other member modifications below may fail
 	if _, _, _, err := client.JoinConversationContext(ctx, channelID); err != nil {
-		if err.Error() != "already_in_channel" {
+		if err.Error() != "already_in_channel" && err.Error() != "method_not_supported_for_channel_type" {
 			return fmt.Errorf("api user could not join conversation: %w", err)
 		}
 	}
