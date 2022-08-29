@@ -86,9 +86,9 @@ func resourceSlackUserGroupCreate(ctx context.Context, d *schema.ResourceData, m
 				return diag.Errorf("could not enable usergroup %s (%s): %s", name, group.ID, err)
 			}
 		}
-		_, err = client.UpdateUserGroupContext(ctx, createdUserGroup.ID)
+		_, err = client.UpdateUserGroupContext(ctx, group.ID)
 		if err != nil {
-			return diag.Errorf("could not update usergroup %s: %s", name, err)
+			return diag.Errorf("could not update usergroup %s (%s): %s", name, group.ID, err)
 		}
 		d.SetId(createdUserGroup.ID)
 	} else {
