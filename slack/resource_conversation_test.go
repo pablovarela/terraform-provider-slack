@@ -37,6 +37,7 @@ func init() {
 				channels, nextCursor, err := c.GetConversationsContext(context.Background(), &slack.GetConversationsParameters{
 					ExcludeArchived: true,
 					Types:           []string{"public_channel", "private_channel"},
+					Limit:           200,
 					Cursor:          cursor,
 				})
 				cursor = nextCursor
