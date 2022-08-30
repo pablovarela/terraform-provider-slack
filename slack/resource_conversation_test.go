@@ -31,25 +31,34 @@ func init() {
 				return fmt.Errorf("error getting client: %s", err)
 			}
 			c := client.(*slack.Client)
-			channels, _, err := c.GetConversations(&slack.GetConversationsParameters{
-				ExcludeArchived: true,
-				Types:           []string{"public_channel", "private_channel"},
-			})
-			if err != nil {
-				return fmt.Errorf("[ERROR] error getting channels: %s", err)
-			}
+			var cursor string
 			var sweeperErrs *multierror.Error
-			for _, channel := range channels {
-				if strings.HasPrefix(channel.Name, conversationNamePrefix) {
-					err := c.ArchiveConversationContext(context.Background(), channel.ID)
-					if err != nil {
-						if err.Error() != "already_archived" {
-							sweeperErr := fmt.Errorf("archiving channel %s during sweep: %s", channel.Name, err)
-							log.Printf("[ERROR] %s", sweeperErr)
-							sweeperErrs = multierror.Append(sweeperErrs, err)
+			for {
+				channels, nextCursor, err := c.GetConversationsContext(context.Background(), &slack.GetConversationsParameters{
+					ExcludeArchived: true,
+					Types:           []string{"public_channel", "private_channel"},
+					Cursor:          cursor,
+				})
+				cursor = nextCursor
+				if err != nil {
+					return fmt.Errorf("[ERROR] error getting channels: %s", err)
+				}
+				for _, channel := range channels {
+					log.Printf("processing channel: %s", channel.Name)
+					if strings.HasPrefix(channel.Name, conversationNamePrefix) {
+						err := c.ArchiveConversationContext(context.Background(), channel.ID)
+						if err != nil {
+							if err.Error() != "already_archived" {
+								sweeperErr := fmt.Errorf("archiving channel %s during sweep: %s", channel.Name, err)
+								log.Printf("[ERROR] %s", sweeperErr)
+								sweeperErrs = multierror.Append(sweeperErrs, err)
+							}
 						}
+						fmt.Printf("[INFO] archived channel %s during sweep\n", channel.Name)
 					}
-					fmt.Printf("[INFO] archived channel %s during sweep\n", channel.Name)
+				}
+				if cursor == "" {
+					break
 				}
 			}
 			return sweeperErrs.ErrorOrNil()
