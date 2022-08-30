@@ -1,10 +1,7 @@
 ---
 name: Feature request
 about: Suggest an idea for this project
-title: ''
-labels: ''
-assignees: ''
-
+labels: bug
 ---
 
 **Is your feature request related to a problem? Please describe.**
