@@ -90,7 +90,7 @@ func resourceSlackUserGroupCreate(ctx context.Context, d *schema.ResourceData, m
 		if err != nil {
 			return diag.Errorf("could not update usergroup %s (%s): %s", name, group.ID, err)
 		}
-		d.SetId(createdUserGroup.ID)
+		d.SetId(group.ID)
 	} else {
 		d.SetId(createdUserGroup.ID)
 	}
