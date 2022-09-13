@@ -92,7 +92,7 @@ terraform plan
 ## Argument Reference
 
 In addition to [generic `provider` arguments](https://www.terraform.io/docs/configuration/providers.html)
-(e.g. `alias` and `version`), the following arguments are supported in the AWS
+(e.g. `alias` and `version`), the following arguments are supported in the Slack
  `provider` block:
 
 - `token` - (Mandatory) The Slack token. It must be provided,
