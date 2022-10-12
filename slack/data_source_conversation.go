@@ -16,11 +16,11 @@ func dataSourceConversation() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"channel_id": {
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
 			},
 			"name": {
 				Type:     schema.TypeString,
-				Computed: true,
+				Optional: true,
 			},
 			"topic": {
 				Type:     schema.TypeString,
@@ -68,11 +68,33 @@ func dataSourceConversation() *schema.Resource {
 
 func dataSourceSlackConversationRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*slack.Client)
-	channelID := d.Get("channel_id").(string)
 
-	channel, err := client.GetConversationInfoContext(ctx, channelID, false)
-	if err != nil {
-		return diag.FromErr(fmt.Errorf("couldn't get conversation info for %s: %w", channelID, err))
+	var channelID string
+	if value, ok := d.GetOk("channel_id"); ok {
+		channelID = value.(string)
+	}
+
+	var channelName string
+	if value, ok := d.GetOk("name"); ok {
+		channelName = value.(string)
+	}
+
+	if (channelID == "" && channelName == "") || (channelID != "" && channelName != "") {
+		return diag.Errorf("exactly one of channel id or channel name may be specified")
+	}
+
+	var channel *slack.Channel
+	var err error
+	if channelID != "" {
+		channel, err = client.GetConversationInfoContext(ctx, channelID, false)
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("couldn't get conversation info for %s: %w", channelID, err))
+		}
+	} else {
+		channel, err = findExistingChannel(ctx, client, channelName, false)
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("couldn't get conversation info for %s: %w", channelName, err))
+		}
 	}
 
 	users, _, err := client.GetUsersInConversationContext(ctx, &slack.GetUsersInConversationParameters{

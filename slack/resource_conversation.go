@@ -228,7 +228,7 @@ func findExistingChannel(ctx context.Context, client *slack.Client, name string,
 		}
 	}
 	// looked through entire list, but didn't find matching name
-	return nil, fmt.Errorf("name_taken, but could not find channel")
+	return nil, fmt.Errorf("could not find channel with name %s", name)
 }
 
 func updateChannelMembers(ctx context.Context, d *schema.ResourceData, client *slack.Client, channelID string) error {
