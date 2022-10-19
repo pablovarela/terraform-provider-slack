@@ -58,6 +58,24 @@ means:
 - Static token
 - Environment variables
 
+### Creating a Token
+
+This requires Slack Workspace administration privileges.
+
+1. Go to [api.slack.com](https://api.slack.com/)
+2. Create an app, From scratch
+3. Give it a name: `Terraform - <Environment>`
+4. Select your Workspace, Create App
+5. Scroll down to Permissions
+6. Under "Bot Token Scopes" add `usergroups:read`, `usergroups:write`,
+and `users:read` for `slack_usergroup` (for `slack_conversation` this
+is larger: see the specific documentation)
+7. Go back to the "Basic Information" tab and scroll down to
+"Display Information": Update this appropriately
+8. Scroll back up and Install to Workspace
+9. Go to the "OAuth & Permissions" tab
+10. Copy the "Bot User OAuth Token"
+
 ### Static Token
 
 !> **Warning:** Hard-coding credentials into any Terraform configuration is not

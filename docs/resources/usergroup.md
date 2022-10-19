@@ -13,6 +13,7 @@ This resource requires the following scopes:
 
 - [usergroups:write](https://api.slack.com/scopes/usergroups:write)
 - [usergroups:read](https://api.slack.com/scopes/usergroups:read)
+- [users:read](https://api.slack.com/scopes/users:read)
 
 The Slack API methods used by the resource are:
 
@@ -22,6 +23,7 @@ The Slack API methods used by the resource are:
 - [usergroups.update](https://api.slack.com/methods/usergroups.update)
 - [usergroups.list](https://api.slack.com/methods/usergroups.list)
 - [usergroups.users.update](https://api.slack.com/methods/usergroups.users.update)
+- [users.list](https://api.slack.com/methods/users.list)
 
 If you get `missing_scope` errors while using this resource check the scopes against
 the documentation for the methods above.
