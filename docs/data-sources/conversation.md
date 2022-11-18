@@ -29,13 +29,19 @@ the documentation for the methods above.
 data "slack_conversation" "test" {
   channel_id = "my-channel"
 }
+
+data "slack_conversation" "test-name" {
+  name = "my-channel-name"
+}
 ```
 
 ## Argument Reference
 
 The following arguments are supported:
 
-- `channel_id` - (Required) The ID of the channel
+- `channel_id` - (Optional) The ID of the channel
+- `name` - (Optional) The name of the public or private channel
+- `is_private` - (Optional) The conversation is privileged between two or more members
 
 ## Attribute Reference
 

@@ -16,11 +16,15 @@ func dataSourceConversation() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"channel_id": {
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
 			},
 			"name": {
 				Type:     schema.TypeString,
-				Computed: true,
+				Optional: true,
+			},
+			"is_private": {
+				Type:     schema.TypeBool,
+				Optional: true,
 			},
 			"topic": {
 				Type:     schema.TypeString,
@@ -36,10 +40,6 @@ func dataSourceConversation() *schema.Resource {
 			},
 			"creator": {
 				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"is_private": {
-				Type:     schema.TypeBool,
 				Computed: true,
 			},
 			"is_archived": {
@@ -69,10 +69,23 @@ func dataSourceConversation() *schema.Resource {
 func dataSourceSlackConversationRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*slack.Client)
 	channelID := d.Get("channel_id").(string)
+	channelName := d.Get("name").(string)
+	isPrivate := d.Get("is_private").(bool)
 
-	channel, err := client.GetConversationInfoContext(ctx, channelID, false)
-	if err != nil {
-		return diag.FromErr(fmt.Errorf("couldn't get conversation info for %s: %w", channelID, err))
+	var channel *slack.Channel
+	var err error
+	if channelID != "" {
+		channel, err = client.GetConversationInfoContext(ctx, channelID, false)
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("couldn't get conversation info for %s: %w", channelID, err))
+		}
+	} else if channelName != "" {
+		channel, err = findExistingChannel(ctx, client, channelName, isPrivate)
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("couldn't get conversation info for %s: %w", channelName, err))
+		}
+	} else {
+		return diag.FromErr(fmt.Errorf("channel_id or name must be set"))
 	}
 
 	users, _, err := client.GetUsersInConversationContext(ctx, &slack.GetUsersInConversationParameters{
