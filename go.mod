@@ -13,5 +13,5 @@ require (
 	github.com/mitchellh/go-wordwrap v1.0.1 // indirect
 	github.com/slack-go/slack v0.11.3
 	github.com/stretchr/testify v1.8.1
-	github.com/ysmood/golangci-lint v0.6.0
+	github.com/ysmood/golangci-lint v0.6.2
 )
