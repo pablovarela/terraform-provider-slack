@@ -133,7 +133,10 @@ func resourceSlackConversationCreate(ctx context.Context, d *schema.ResourceData
 	name := d.Get("name").(string)
 	isPrivate := d.Get("is_private").(bool)
 
-	channel, err := client.CreateConversationContext(ctx, name, isPrivate)
+	channel, err := client.CreateConversationContext(ctx, slack.CreateConversationParams{
+		ChannelName: name,
+		IsPrivate:   isPrivate,
+	})
 	if err != nil && err.Error() == "name_taken" && d.Get("adopt_existing_channel").(bool) {
 		channel, err = findExistingChannel(ctx, client, name, isPrivate)
 		if err == nil && channel.IsArchived {
@@ -235,7 +238,9 @@ func updateChannelMembers(ctx context.Context, d *schema.ResourceData, client *s
 	members := d.Get("permanent_members").(*schema.Set)
 
 	userIds := schemaSetToSlice(members)
-	channel, err := client.GetConversationInfoContext(ctx, channelID, false)
+	channel, err := client.GetConversationInfoContext(ctx, &slack.GetConversationInfoInput{
+		ChannelID: channelID,
+	})
 	if err != nil {
 		return fmt.Errorf("could not retrieve conversation info for ID %s: %w", channelID, err)
 	}
@@ -289,7 +294,9 @@ func resourceSlackConversationRead(ctx context.Context, d *schema.ResourceData, 
 	client := m.(*slack.Client)
 	id := d.Id()
 	var diags diag.Diagnostics
-	channel, err := client.GetConversationInfoContext(ctx, id, false)
+	channel, err := client.GetConversationInfoContext(ctx, &slack.GetConversationInfoInput{
+		ChannelID: id,
+	})
 	if err != nil {
 		if err.Error() == "channel_not_found" {
 			diags = append(diags, diag.Diagnostic{
