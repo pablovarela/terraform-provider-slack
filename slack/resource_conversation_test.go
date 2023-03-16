@@ -205,7 +205,9 @@ func testCheckSlackChannelAttributes(t *testing.T, resourceName string, expected
 
 		c := testAccProvider.Meta().(*slack.Client)
 		primary := rs.Primary
-		channel, err := c.GetConversationInfo(primary.ID, false)
+		channel, err := c.GetConversationInfo(&slack.GetConversationInfoInput{
+			ChannelID: primary.ID,
+		})
 		if err != nil {
 			return fmt.Errorf("couldn't get conversation info for %s: %s", primary.ID, err)
 		}

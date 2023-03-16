@@ -101,7 +101,11 @@ func createTestConversation(t *testing.T) *slack.Channel {
 
 	c := client.(*slack.Client)
 	channelName := acctest.RandomWithPrefix(conversationNamePrefix)
-	channel, err := c.CreateConversationContext(context.Background(), channelName, false)
+
+	channel, err := c.CreateConversationContext(context.Background(), slack.CreateConversationParams{
+		ChannelName: channelName,
+		IsPrivate:   false,
+	})
 	require.NoError(t, err)
 	t.Cleanup(func() {
 		_ = c.ArchiveConversationContext(context.Background(), channel.ID)
