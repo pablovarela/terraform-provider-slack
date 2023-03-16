@@ -75,7 +75,9 @@ func dataSourceSlackConversationRead(ctx context.Context, d *schema.ResourceData
 	var channel *slack.Channel
 	var err error
 	if channelID != "" {
-		channel, err = client.GetConversationInfoContext(ctx, channelID, false)
+		channel, err = client.GetConversationInfoContext(ctx, &slack.GetConversationInfoInput{
+			ChannelID: channelID,
+		})
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("couldn't get conversation info for %s: %w", channelID, err))
 		}
