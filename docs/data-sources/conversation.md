@@ -43,7 +43,8 @@ The following arguments are supported:
 - `name` - (Optional) The name of the public or private channel
 - `is_private` - (Optional) The conversation is privileged between two or more members
 
-Either `channel_id` or `name` must be provided. `is_private` only works in conjunction with `name`.
+Either `channel_id` or `name` must be provided. `is_private` only works in conjunction
+with `name`.
 
 ## Attribute Reference
 
