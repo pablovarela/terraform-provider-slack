@@ -70,7 +70,7 @@ func init() {
 func TestAccSlackConversationTest(t *testing.T) {
 	t.Parallel()
 
-	resourceName := "slack_conversation.test"
+	resourceName := "slack_conversation.%s"
 
 	t.Run("update name, topic and purpose", func(t *testing.T) {
 		name := acctest.RandomWithPrefix(conversationNamePrefix)
@@ -79,7 +79,7 @@ func TestAccSlackConversationTest(t *testing.T) {
 		updateName := acctest.RandomWithPrefix(conversationNamePrefix)
 		updateChannel := testAccSlackConversation(updateName)
 
-		testSlackConversationUpdate(t, resourceName, createChannel, &updateChannel)
+		testSlackConversationUpdate(t, fmt.Sprintf(resourceName, name), createChannel, &updateChannel)
 	})
 
 	t.Run("archive channel", func(t *testing.T) {
@@ -89,7 +89,7 @@ func TestAccSlackConversationTest(t *testing.T) {
 		updateChannel := createChannel
 		updateChannel.IsArchived = true
 
-		testSlackConversationUpdate(t, resourceName, createChannel, &updateChannel)
+		testSlackConversationUpdate(t, fmt.Sprintf(resourceName, name), createChannel, &updateChannel)
 	})
 
 	t.Run("unarchive channel", func(t *testing.T) {
@@ -100,7 +100,7 @@ func TestAccSlackConversationTest(t *testing.T) {
 		updateChannel := createChannel
 		updateChannel.IsArchived = false
 
-		testSlackConversationUpdate(t, resourceName, createChannel, &updateChannel)
+		testSlackConversationUpdate(t, fmt.Sprintf(resourceName, name), createChannel, &updateChannel)
 	})
 
 	t.Run("add permanent members", func(t *testing.T) {
@@ -110,7 +110,7 @@ func TestAccSlackConversationTest(t *testing.T) {
 		updateChannel := createChannel
 		updateChannel.Members = []string{testUser00.id, testUser01.id}
 
-		testSlackConversationUpdate(t, resourceName, createChannel, &updateChannel)
+		testSlackConversationUpdate(t, fmt.Sprintf(resourceName, name), createChannel, &updateChannel)
 	})
 
 	t.Run("remove permanent members", func(t *testing.T) {
@@ -120,7 +120,7 @@ func TestAccSlackConversationTest(t *testing.T) {
 		updateChannel := createChannel
 		updateChannel.Members = []string{testUser00.id}
 
-		testSlackConversationUpdate(t, resourceName, createChannel, &updateChannel)
+		testSlackConversationUpdate(t, fmt.Sprintf(resourceName, name), createChannel, &updateChannel)
 	})
 
 	t.Run("invite only the creator to the channel", func(t *testing.T) {
@@ -128,7 +128,7 @@ func TestAccSlackConversationTest(t *testing.T) {
 		users := []string{testUserCreator.id}
 		createChannel := testAccSlackConversationWithMembers(name, users)
 
-		testSlackConversationUpdate(t, resourceName, createChannel, nil)
+		testSlackConversationUpdate(t, fmt.Sprintf(resourceName, name), createChannel, nil)
 	})
 
 	t.Run("invite creator and other users to the channel", func(t *testing.T) {
@@ -136,7 +136,7 @@ func TestAccSlackConversationTest(t *testing.T) {
 		users := []string{testUserCreator.id, testUser00.id, testUser01.id}
 		createChannel := testAccSlackConversationWithMembers(name, users)
 
-		testSlackConversationUpdate(t, resourceName, createChannel, nil)
+		testSlackConversationUpdate(t, fmt.Sprintf(resourceName, name), createChannel, nil)
 	})
 }
 
@@ -160,7 +160,7 @@ func testSlackConversationUpdate(t *testing.T, resourceName string, createChanne
 
 	if updateChannel != nil {
 		steps = append(steps, resource.TestStep{
-			Config: testAccSlackConversationConfig(*updateChannel),
+			Config: testAccSlackConversationConfigWithResourceName(*updateChannel, createChannel.Name),
 			Check: resource.ComposeTestCheckFunc(
 				testCheckSlackChannelAttributes(t, resourceName, *updateChannel),
 				testCheckResourceAttrBasic(resourceName, *updateChannel),
@@ -308,14 +308,14 @@ func testAccCheckConversationDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccSlackConversationConfig(c slack.Channel) string {
+func testAccSlackConversationConfigWithResourceName(c slack.Channel, resourceName string) string {
 	var members []string
 	for _, member := range c.Members {
 		members = append(members, fmt.Sprintf(`"%s"`, member))
 	}
 
 	return fmt.Sprintf(`
-resource slack_conversation test {
+resource slack_conversation %s {
   name              = "%s"
   topic             = "%s"
   purpose           = "%s"
@@ -323,5 +323,9 @@ resource slack_conversation test {
   is_private        = %t
   is_archived       = %t
 }
-`, c.Name, c.Topic.Value, c.Purpose.Value, strings.Join(members, ","), c.IsPrivate, c.IsArchived)
+`, resourceName, c.Name, c.Topic.Value, c.Purpose.Value, strings.Join(members, ","), c.IsPrivate, c.IsArchived)
+}
+
+func testAccSlackConversationConfig(c slack.Channel) string {
+	return testAccSlackConversationConfigWithResourceName(c, c.Name)
 }

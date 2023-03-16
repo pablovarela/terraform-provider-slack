@@ -194,9 +194,10 @@ func findExistingChannel(ctx context.Context, client *slack.Client, name string,
 	}
 	for !paginationComplete {
 		channels, nextCursor, err := client.GetConversationsContext(ctx, &slack.GetConversationsParameters{
-			Cursor: cursor,
-			Limit:  cursorLimit,
-			Types:  types,
+			Cursor:          cursor,
+			Limit:           cursorLimit,
+			Types:           types,
+			ExcludeArchived: true,
 		})
 		tflog.Debug(ctx, "new page of channels",
 			map[string]interface{}{
@@ -214,7 +215,7 @@ func findExistingChannel(ctx context.Context, client *slack.Client, name string,
 				}
 				// retry current cursor
 			} else {
-				return nil, fmt.Errorf("name_taken, but %s trying to find", err)
+				return nil, fmt.Errorf("couldn't get conversation context: %s", err.Error())
 			}
 		} else {
 			// see if channel in current batch
@@ -231,7 +232,7 @@ func findExistingChannel(ctx context.Context, client *slack.Client, name string,
 		}
 	}
 	// looked through entire list, but didn't find matching name
-	return nil, fmt.Errorf("name_taken, but could not find channel")
+	return nil, fmt.Errorf("could not find channel with name %s", name)
 }
 
 func updateChannelMembers(ctx context.Context, d *schema.ResourceData, client *slack.Client, channelID string) error {
@@ -402,6 +403,12 @@ func updateChannelData(d *schema.ResourceData, channel *slack.Channel, users []s
 		return diag.Errorf("error setting id: returned channel does not have an id")
 	}
 	d.SetId(channel.ID)
+
+	if d.Get("channel_id") != nil {
+		if err := d.Set("channel_id", channel.ID); err != nil {
+			return diag.Errorf("error setting channel_id: %s", err)
+		}
+	}
 
 	if err := d.Set("name", channel.Name); err != nil {
 		return diag.Errorf("error setting name: %s", err)
