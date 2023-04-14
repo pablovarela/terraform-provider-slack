@@ -398,7 +398,7 @@ func resourceSlackConversationDelete(ctx context.Context, d *schema.ResourceData
 	return diags
 }
 
-func updateChannelData(d *schema.ResourceData, channel *slack.Channel, users []string) diag.Diagnostics {
+func updateChannelData(d *schema.ResourceData, channel *slack.Channel, _ []string) diag.Diagnostics {
 	if channel.ID == "" {
 		return diag.Errorf("error setting id: returned channel does not have an id")
 	}
