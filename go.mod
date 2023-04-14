@@ -10,7 +10,7 @@ require (
 	github.com/katbyte/terrafmt v0.5.2
 	github.com/slack-go/slack v0.12.1
 	github.com/stretchr/testify v1.8.2
-	github.com/ysmood/golangci-lint v0.6.2
+	github.com/ysmood/golangci-lint v0.7.0
 )
 
 require (
@@ -80,6 +80,7 @@ require (
 	github.com/vmihailenco/msgpack/v4 v4.3.12 // indirect
 	github.com/vmihailenco/tagparser v0.1.1 // indirect
 	github.com/xo/terminfo v0.0.0-20210125001918-ca9a967f8778 // indirect
+	github.com/ysmood/fetchup v0.1.3 // indirect
 	github.com/yuin/goldmark v1.4.13 // indirect
 	github.com/yuin/goldmark-meta v0.0.0-20191126180153-f0638e958b60 // indirect
 	github.com/zclconf/go-cty v1.13.1 // indirect
