@@ -221,7 +221,7 @@ func updateUserGroupData(d *schema.ResourceData, userGroup slack.UserGroup) diag
 		return diag.Errorf("error setting description: %s", err)
 	}
 
-	if err := d.Set("channels", userGroup.Prefs.Channels); err != nil {
+	if err := d.Set("channels", append(userGroup.Prefs.Channels, userGroup.Prefs.Groups...)); err != nil {
 		return diag.Errorf("error setting channels: %s", err)
 	}
 
