@@ -10,7 +10,7 @@ require (
 	github.com/katbyte/terrafmt v0.5.2
 	github.com/slack-go/slack v0.12.2
 	github.com/stretchr/testify v1.8.2
-	github.com/ysmood/golangci-lint v0.8.0
+	github.com/ysmood/golangci-lint v0.10.1
 )
 
 require (
