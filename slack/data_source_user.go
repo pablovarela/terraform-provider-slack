@@ -3,6 +3,7 @@ package slack
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -43,11 +44,19 @@ func dataSourceUserRead(ctx context.Context, d *schema.ResourceData, m interface
 	}
 
 	if email, ok := d.GetOk("email"); ok {
-		u, err := client.GetUserByEmailContext(ctx, email.(string))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("not found %s: %w", email.(string), err))
+		for {
+			var err error
+			user, err = client.GetUserByEmailContext(ctx, email.(string))
+
+			if rateLimitedError, ok := err.(*slack.RateLimitedError); ok {
+				fmt.Printf("Rate limited. Retrying after %v seconds...\n", rateLimitedError.RetryAfter)
+				time.Sleep(rateLimitedError.RetryAfter)
+				continue
+			} else if err != nil {
+				return diag.FromErr(fmt.Errorf("not found %s: %w", email.(string), err))
+			}
+			break
 		}
-		user = u
 	}
 
 	if user == nil {
