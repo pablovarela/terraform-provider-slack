@@ -8,7 +8,7 @@ require (
 	github.com/hashicorp/terraform-plugin-log v0.8.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.26.1
 	github.com/katbyte/terrafmt v0.5.2
-	github.com/slack-go/slack v0.12.2
+	github.com/slack-go/slack v0.12.4
 	github.com/stretchr/testify v1.8.2
 	github.com/ysmood/golangci-lint v0.8.0
 )
