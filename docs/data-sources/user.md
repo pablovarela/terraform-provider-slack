@@ -41,8 +41,10 @@ The following arguments are supported:
 
 - `name` - (Optional) The name of the user
 - `email` - (Optional) The email of the user
+- `include_deactivated` - (Optional) Set to `true` to search deactivated users
 
-The data source expects exactly one of these fields, you can't set both.
+The data source expects exactly one of the `name` or `email` fields,
+you can't set both.
 
 ## Attribute Reference
 
