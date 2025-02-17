@@ -1,4 +1,4 @@
-module github.com/pablovarela/terraform-provider-slack
+module github.com/tapih/terraform-provider-slack
 
 go 1.22.0
 
