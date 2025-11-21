@@ -1,6 +1,6 @@
 module github.com/pablovarela/terraform-provider-slack
 
-go 1.20
+go 1.22
 
 require (
 	github.com/bflad/tfproviderdocs v0.9.1
@@ -8,8 +8,8 @@ require (
 	github.com/hashicorp/terraform-plugin-log v0.8.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.26.1
 	github.com/katbyte/terrafmt v0.5.2
-	github.com/slack-go/slack v0.12.2
-	github.com/stretchr/testify v1.8.2
+	github.com/slack-go/slack v0.17.3
+	github.com/stretchr/testify v1.10.0
 	github.com/ysmood/golangci-lint v0.8.0
 )
 
@@ -29,7 +29,7 @@ require (
 	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/google/uuid v1.1.2 // indirect
 	github.com/gookit/color v1.5.1 // indirect
-	github.com/gorilla/websocket v1.4.2 // indirect
+	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-checkpoint v0.5.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
