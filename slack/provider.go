@@ -28,6 +28,7 @@ func Provider() *schema.Provider {
 			"slack_conversation": dataSourceConversation(),
 			"slack_user":         dataSourceUser(),
 			"slack_usergroup":    dataSourceUserGroup(),
+			"slack_usergroups":   dataSourceUserGroups(),
 		},
 
 		ConfigureContextFunc: providerConfigure,
