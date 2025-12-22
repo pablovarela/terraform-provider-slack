@@ -5,7 +5,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/slack-go/slack"
 )
 
 // Provider returns a *schema.Provider
@@ -42,7 +41,7 @@ func providerConfigure(_ context.Context, d *schema.ResourceData) (interface{}, 
 	if !ok {
 		return nil, diag.Errorf("could not create slack client. Please provide a token.")
 	}
-	slackClient := slack.New(token.(string))
+	slackClient := NewSlackClient(token.(string))
 	return slackClient, diags
 }
 
