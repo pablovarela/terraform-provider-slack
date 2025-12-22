@@ -2,7 +2,9 @@ package slack
 
 import (
 	"context"
+	"fmt"
 	"sync"
+	"time"
 
 	"github.com/slack-go/slack"
 )
@@ -47,13 +49,28 @@ func (c *SlackClient) GetUserGroupsCached(ctx context.Context, includeDisabled, 
 	}
 	c.userGroupsMu.RUnlock()
 
-	// Fetch from API
+	// Fetch from API with rate limit retry
 	opts := []slack.GetUserGroupsOption{
 		slack.GetUserGroupsOptionIncludeDisabled(includeDisabled),
 		slack.GetUserGroupsOptionIncludeUsers(includeUsers),
 	}
-	userGroups, err := c.Client.GetUserGroupsContext(ctx, opts...)
-	if err != nil {
+
+	var userGroups []slack.UserGroup
+	for {
+		var err error
+		userGroups, err = c.Client.GetUserGroupsContext(ctx, opts...)
+		if err == nil {
+			break
+		}
+
+		if rateLimitErr, ok := err.(*slack.RateLimitedError); ok {
+			select {
+			case <-ctx.Done():
+				return nil, fmt.Errorf("context cancelled while waiting for rate limit: %w", ctx.Err())
+			case <-time.After(rateLimitErr.RetryAfter):
+				continue
+			}
+		}
 		return nil, err
 	}
 
