@@ -128,7 +128,7 @@ func resourceSlackConversation() *schema.Resource {
 }
 
 func resourceSlackConversationCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*slack.Client)
+	client := m.(*SlackClient)
 
 	name := d.Get("name").(string)
 	isPrivate := d.Get("is_private").(bool)
@@ -138,7 +138,7 @@ func resourceSlackConversationCreate(ctx context.Context, d *schema.ResourceData
 		IsPrivate:   isPrivate,
 	})
 	if err != nil && err.Error() == "name_taken" && d.Get("adopt_existing_channel").(bool) {
-		channel, err = findExistingChannel(ctx, client, name, isPrivate)
+		channel, err = findExistingChannel(ctx, client.Client, name, isPrivate)
 		if err == nil && channel.IsArchived {
 			// ensure unarchived first if adopting existing channel, else other calls below will fail
 			if err := client.UnArchiveConversationContext(ctx, channel.ID); err != nil {
@@ -152,7 +152,7 @@ func resourceSlackConversationCreate(ctx context.Context, d *schema.ResourceData
 		return diag.Errorf("could not create conversation %s: %s", name, err)
 	}
 
-	err = updateChannelMembers(ctx, d, client, channel.ID)
+	err = updateChannelMembers(ctx, d, client.Client, channel.ID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -171,7 +171,7 @@ func resourceSlackConversationCreate(ctx context.Context, d *schema.ResourceData
 
 	if isArchived, ok := d.GetOk("is_archived"); ok {
 		if isArchived.(bool) {
-			err := archiveConversationWithContext(ctx, client, channel.ID)
+			err := archiveConversationWithContext(ctx, client.Client, channel.ID)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -292,7 +292,7 @@ func updateChannelMembers(ctx context.Context, d *schema.ResourceData, client *s
 }
 
 func resourceSlackConversationRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*slack.Client)
+	client := m.(*SlackClient)
 	id := d.Id()
 	var diags diag.Diagnostics
 	channel, err := client.GetConversationInfoContext(ctx, &slack.GetConversationInfoInput{
@@ -320,7 +320,7 @@ func resourceSlackConversationRead(ctx context.Context, d *schema.ResourceData, 
 }
 
 func resourceSlackConversationUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*slack.Client)
+	client := m.(*SlackClient)
 
 	id := d.Id()
 
@@ -347,7 +347,7 @@ func resourceSlackConversationUpdate(ctx context.Context, d *schema.ResourceData
 	if d.HasChange("is_archived") {
 		isArchived := d.Get("is_archived")
 		if isArchived.(bool) {
-			err := archiveConversationWithContext(ctx, client, id)
+			err := archiveConversationWithContext(ctx, client.Client, id)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -361,7 +361,7 @@ func resourceSlackConversationUpdate(ctx context.Context, d *schema.ResourceData
 	}
 
 	if d.HasChange("permanent_members") {
-		err := updateChannelMembers(ctx, d, client, id)
+		err := updateChannelMembers(ctx, d, client.Client, id)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -372,7 +372,7 @@ func resourceSlackConversationUpdate(ctx context.Context, d *schema.ResourceData
 
 func resourceSlackConversationDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
-	client := m.(*slack.Client)
+	client := m.(*SlackClient)
 
 	id := d.Id()
 	action := d.Get("action_on_destroy").(string)
@@ -384,7 +384,7 @@ func resourceSlackConversationDelete(ctx context.Context, d *schema.ResourceData
 			Detail:   fmt.Sprintf("action_on_destroy is set to %s which does not archive the conversation ", conversationActionOnDestroyNone),
 		})
 	case conversationActionOnDestroyArchive:
-		err := archiveConversationWithContext(ctx, client, id)
+		err := archiveConversationWithContext(ctx, client.Client, id)
 		if err != nil {
 			if err.Error() == "channel_not_found" {
 				return diags

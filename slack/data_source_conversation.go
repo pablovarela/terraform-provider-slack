@@ -67,7 +67,7 @@ func dataSourceConversation() *schema.Resource {
 }
 
 func dataSourceSlackConversationRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*slack.Client)
+	client := m.(*SlackClient)
 	channelID := d.Get("channel_id").(string)
 	channelName := d.Get("name").(string)
 	isPrivate := d.Get("is_private").(bool)
@@ -82,7 +82,7 @@ func dataSourceSlackConversationRead(ctx context.Context, d *schema.ResourceData
 			return diag.FromErr(fmt.Errorf("couldn't get conversation info for %s: %w", channelID, err))
 		}
 	} else if channelName != "" {
-		channel, err = findExistingChannel(ctx, client, channelName, isPrivate)
+		channel, err = findExistingChannel(ctx, client.Client, channelName, isPrivate)
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("couldn't get conversation info for %s: %w", channelName, err))
 		}
