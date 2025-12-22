@@ -55,7 +55,7 @@ func resourceSlackUserGroup() *schema.Resource {
 }
 
 func resourceSlackUserGroupCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*slack.Client)
+	client := m.(*SlackClient)
 
 	name := d.Get("name").(string)
 	description := d.Get("description").(string)
@@ -102,14 +102,15 @@ func resourceSlackUserGroupCreate(ctx context.Context, d *schema.ResourceData, m
 		}
 		schemaSetToSlice(users)
 	}
+	client.InvalidateUserGroupsCache()
 	return resourceSlackUserGroupRead(ctx, d, m)
 }
 
 func resourceSlackUserGroupRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*slack.Client)
+	client := m.(*SlackClient)
 	id := d.Id()
 	var diags diag.Diagnostics
-	userGroups, err := client.GetUserGroupsContext(ctx, slack.GetUserGroupsOptionIncludeUsers(true))
+	userGroups, err := client.GetUserGroupsCached(ctx, false, true)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("couldn't get usergroups: %w", err))
 	}
@@ -128,8 +129,8 @@ func resourceSlackUserGroupRead(ctx context.Context, d *schema.ResourceData, m i
 }
 
 func findUserGroupByName(ctx context.Context, name string, includeDisabled bool, m interface{}) (slack.UserGroup, error) {
-	client := m.(*slack.Client)
-	userGroups, err := client.GetUserGroupsContext(ctx, slack.GetUserGroupsOptionIncludeDisabled(includeDisabled), slack.GetUserGroupsOptionIncludeUsers(true))
+	client := m.(*SlackClient)
+	userGroups, err := client.GetUserGroupsCached(ctx, includeDisabled, true)
 	if err != nil {
 		return slack.UserGroup{}, err
 	}
@@ -144,8 +145,8 @@ func findUserGroupByName(ctx context.Context, name string, includeDisabled bool,
 }
 
 func findUserGroupByID(ctx context.Context, id string, includeDisabled bool, m interface{}) (slack.UserGroup, error) {
-	client := m.(*slack.Client)
-	userGroups, err := client.GetUserGroupsContext(ctx, slack.GetUserGroupsOptionIncludeDisabled(includeDisabled), slack.GetUserGroupsOptionIncludeUsers(true))
+	client := m.(*SlackClient)
+	userGroups, err := client.GetUserGroupsCached(ctx, includeDisabled, true)
 	if err != nil {
 		return slack.UserGroup{}, err
 	}
@@ -160,7 +161,7 @@ func findUserGroupByID(ctx context.Context, id string, includeDisabled bool, m i
 }
 
 func resourceSlackUserGroupUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*slack.Client)
+	client := m.(*SlackClient)
 
 	id := d.Id()
 	name := d.Get("name").(string)
@@ -187,18 +188,20 @@ func resourceSlackUserGroupUpdate(ctx context.Context, d *schema.ResourceData, m
 		}
 		schemaSetToSlice(users)
 	}
+	client.InvalidateUserGroupsCache()
 	return resourceSlackUserGroupRead(ctx, d, m)
 }
 
 func resourceSlackUserGroupDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
-	client := m.(*slack.Client)
+	client := m.(*SlackClient)
 
 	id := d.Id()
 	_, err := client.DisableUserGroupContext(ctx, id)
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	client.InvalidateUserGroupsCache()
 
 	return diags
 }

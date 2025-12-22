@@ -31,11 +31,11 @@ func dataSourceUser() *schema.Resource {
 func dataSourceUserRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	client := m.(*slack.Client)
+	client := m.(*SlackClient)
 
 	var user *slack.User
 	if name, ok := d.GetOk("name"); ok {
-		u, err := searchByName(ctx, name.(string), client)
+		u, err := searchByName(ctx, name.(string), client.Client)
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("not found %s: %w", name.(string), err))
 		}
